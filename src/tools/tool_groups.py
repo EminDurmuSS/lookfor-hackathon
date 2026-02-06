@@ -8,6 +8,7 @@ from src.tools.shopify_tools import (
     shopify_create_discount_code,
     shopify_create_return,
     shopify_create_store_credit,
+    shopify_get_collection_recommendations,
     shopify_get_customer_orders,
     shopify_get_order_details,
     shopify_get_product_details,
@@ -38,6 +39,7 @@ issue_tools = [
     shopify_create_return,
     shopify_add_tags,
     shopify_get_product_recommendations,
+    shopify_get_collection_recommendations,
     shopify_get_product_details,
     shopify_get_related_knowledge_source,
 ]

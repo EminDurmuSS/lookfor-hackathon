@@ -10,6 +10,7 @@ from __future__ import annotations
 from langchain_core.messages import SystemMessage
 
 from src.config import get_current_context, sonnet_llm
+from src.patterns.guardrails import tool_call_guardrails
 from src.prompts.account_prompt import build_account_prompt
 from src.prompts.issue_prompt import build_issue_prompt
 from src.prompts.wismo_prompt import build_wismo_prompt
@@ -84,18 +85,28 @@ async def _run_react_agent(
                 f"ReAct iteration {iteration + 1}: Calling {tool_name}({json.dumps(tool_args, default=str)[:200]})"
             )
 
-            if tool_name in tool_map:
+            # ── Tool Call Guardrails: validate & correct before execution ──
+            is_allowed, reason, corrected_args = tool_call_guardrails(
+                tool_name, tool_args, state
+            )
+
+            if not is_allowed:
+                reasoning.append(
+                    f"ReAct iteration {iteration + 1}: BLOCKED by guardrail — {reason}"
+                )
+                tool_result = {"success": False, "error": f"Guardrail: {reason}"}
+            elif tool_name in tool_map:
                 try:
-                    tool_result = await tool_map[tool_name].ainvoke(tool_args)
+                    tool_result = await tool_map[tool_name].ainvoke(corrected_args)
                 except Exception as exc:
                     tool_result = {"success": False, "error": str(exc)}
             else:
                 tool_result = {"success": False, "error": f"Unknown tool: {tool_name}"}
 
-            # Log
+            # Log (use corrected_args for accurate logging)
             log_entry = {
                 "tool_name": tool_name,
-                "params": tool_args,
+                "params": corrected_args,
                 "result": tool_result if isinstance(tool_result, dict) else str(tool_result),
             }
             tool_calls_log.append(log_entry)

@@ -597,7 +597,7 @@ async def async_client():
     """Create an async HTTP test client for the FastAPI app."""
     try:
         import httpx
-        from src.api.app import app
+        from src.main import app
 
         async with httpx.AsyncClient(
             transport=httpx.ASGITransport(app=app),
