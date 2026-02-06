@@ -40,12 +40,25 @@ class SessionTrace(BaseModel):
     reflection_violations: list[str] = Field(default_factory=list)
     guardrail_blocks: list[str] = Field(default_factory=list)
     model_calls: dict = Field(default_factory=dict)
+    messages: list[dict] = Field(default_factory=list)
     escalation_payload: Optional[dict] = None
 
 
 def build_session_trace(session_id: str, state: dict) -> SessionTrace:
     """Build a SessionTrace from the final graph state."""
     msgs = state.get("messages", [])
+    
+    # Serialize messages for UI hydration
+    serialized_msgs = []
+    for m in msgs:
+        # Robustly handle LangChain message objects
+        m_type = getattr(m, "type", "unknown")
+        content = getattr(m, "content", "")
+        if m_type == "human":
+            serialized_msgs.append({"role": "customer", "content": content, "type": "human"})
+        elif m_type == "ai":
+            serialized_msgs.append({"role": "assistant", "content": content, "type": "ai"})
+            
     final = ""
     for m in reversed(msgs):
         if hasattr(m, "type") and m.type == "ai" and m.content:
@@ -115,4 +128,5 @@ def build_session_trace(session_id: str, state: dict) -> SessionTrace:
         was_revised=state.get("was_revised", False),
         intent_shifted=state.get("intent_shifted", False),
         escalation_payload=state.get("escalation_payload"),
+        messages=serialized_msgs,
     )

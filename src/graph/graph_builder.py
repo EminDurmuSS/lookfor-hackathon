@@ -30,7 +30,6 @@ from src.agents.react_agents import (
     wismo_agent_node,
 )
 from src.agents.supervisor import supervisor_node, supervisor_route
-from src.graph.checkpointer import checkpointer
 from src.graph.state import CustomerSupportState
 from src.patterns.guardrails import input_guardrails_node, output_guardrails_node
 from src.patterns.handoff import handoff_router_node
@@ -306,7 +305,7 @@ def build_graph() -> StateGraph:
     return graph
 
 
-def compile_graph():
+def compile_graph(checkpointer=None):
     """Build, compile, and return the runnable graph with checkpointer."""
     graph = build_graph()
     return graph.compile(checkpointer=checkpointer)

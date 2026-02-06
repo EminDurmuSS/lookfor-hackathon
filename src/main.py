@@ -5,6 +5,7 @@ Endpoints:
   POST /session/start     → Start a new email session
   POST /session/message   → Send a message in an existing session
   GET  /session/{id}/trace → Get session trace
+  GET  /sessions          → List past sessions (history)
   GET  /health            → Health check
 """
 
@@ -13,20 +14,47 @@ from __future__ import annotations
 import json
 import uuid
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from langchain_core.messages import HumanMessage
 from pydantic import BaseModel
+from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 
 from src.graph.graph_builder import compile_graph
 from src.tracing.models import build_session_trace
+from src import database  # <--- Persistence module
+
+# ── Global Graph (Initialized in lifespan) ──────────────────────────────────
+graph = None
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """
+    Manage application lifecycle.
+    - Initialize DB
+    - Setup AsyncSqliteSaver with aiosqlite connection
+    - Compile graph with the async checkpointer
+    """
+    # 1. Init Session DB (Sync)
+    database.init_db()
+    
+    # 2. Setup Async LangGraph Checkpointer
+    # from_conn_string uses aiosqlite internally
+    async with AsyncSqliteSaver.from_conn_string("history.db") as checkpointer:
+        global graph
+        graph = compile_graph(checkpointer)
+        print("✅ Graph compiled with AsyncSqliteSaver connected to history.db")
+        yield
+        print("🛑 Graph checkpointer closed")
 
 app = FastAPI(
     title="NatPat Multi-Agent Customer Support",
     description="Lookfor Hackathon 2026 — Multi-Agent E-Commerce Customer Support System",
     version="3.0",
+    lifespan=lifespan,
 )
 
 app.add_middleware(
@@ -36,10 +64,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ── Compile graph (singleton) ────────────────────────────────────────────────
-graph = compile_graph()
 
-# ── In-memory session store ──────────────────────────────────────────────────
+# ── In-memory session store (Maintained for fast metadata lookup) ────────────
+# We still keep this for active session metadata, but we also rely on DB.
 sessions: dict[str, dict] = {}
 
 
@@ -79,6 +106,14 @@ class TraceResponse(BaseModel):
     trace: dict
 
 
+class SessionListItem(BaseModel):
+    session_id: str
+    email: str
+    name: str
+    created_at: str
+    preview: Optional[str] = None
+
+
 # ── Endpoints ────────────────────────────────────────────────────────────────
 
 @app.get("/health")
@@ -90,15 +125,25 @@ async def health():
 async def start_session(req: SessionStartRequest):
     """Start a new customer support email session."""
     session_id = f"session_{uuid.uuid4().hex[:12]}"
+    created_at = datetime.utcnow().isoformat()
 
+    # 1. Store in memory (for fast active lookup)
     sessions[session_id] = {
         "customer_email": req.email,
         "customer_first_name": req.first_name,
         "customer_last_name": req.last_name,
         "customer_shopify_id": req.customer_shopify_id,
         "thread_id": session_id,
-        "created_at": datetime.utcnow().isoformat(),
+        "created_at": created_at,
     }
+
+    # 2. Store in SQLite (for sidebar history)
+    database.add_session(
+        session_id=session_id,
+        email=req.email,
+        name=f"{req.first_name} {req.last_name}",
+        created_at=created_at
+    )
 
     return SessionStartResponse(
         session_id=session_id,
@@ -109,9 +154,20 @@ async def start_session(req: SessionStartRequest):
 @app.post("/session/message", response_model=MessageResponse)
 async def send_message(req: MessageRequest):
     """Send a customer message and get an agent response."""
+    if graph is None:
+        raise HTTPException(503, "Graph not initialized")
+
+    # Try to get from memory first
     session = sessions.get(req.session_id)
+    
     if not session:
-        raise HTTPException(404, "Session not found. Start a session first.")
+        session = {
+            "customer_email": "unknown",
+            "customer_first_name": "Customer",
+            "customer_last_name": "",
+            "customer_shopify_id": "",
+            "thread_id": req.session_id
+        }
 
     config = {"configurable": {"thread_id": session["thread_id"]}}
 
@@ -124,8 +180,19 @@ async def send_message(req: MessageRequest):
         "customer_shopify_id": session["customer_shopify_id"],
     }
 
-    # Invoke graph
-    result = await graph.ainvoke(input_state, config=config)
+    # Update preview in DB (async, best effort)
+    try:
+        database.update_preview(req.session_id, req.message)
+    except Exception:
+        pass
+
+    # Invoke graph (State is automatically loaded/saved via AsyncSqliteSaver)
+    try:
+        result = await graph.ainvoke(input_state, config=config)
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(500, f"Graph execution failed: {e}")
 
     # Extract final AI response
     final_response = ""
@@ -150,29 +217,35 @@ async def send_message(req: MessageRequest):
 @app.get("/session/{session_id}/trace", response_model=TraceResponse)
 async def get_trace(session_id: str):
     """Get the full session trace for observability."""
-    session = sessions.get(session_id)
-    if not session:
-        raise HTTPException(404, "Session not found")
+    if graph is None:
+        raise HTTPException(503, "Graph not initialized")
+        
+    try:
+        config = {"configurable": {"thread_id": session_id}}
 
-    config = {"configurable": {"thread_id": session["thread_id"]}}
+        # Get current state from AsyncSqliteSaver
+        state_snapshot = await graph.aget_state(config)
+        state = state_snapshot.values if state_snapshot else {}
 
-    # Get current state from checkpointer
-    state_snapshot = await graph.aget_state(config)
-    state = state_snapshot.values if state_snapshot else {}
+        trace = build_session_trace(session_id, state)
 
-    trace = build_session_trace(session_id, state)
+        return TraceResponse(session_id=session_id, trace=trace.model_dump())
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Trace error: {str(e)}")
 
-    return TraceResponse(session_id=session_id, trace=trace.model_dump())
 
-
-@app.get("/sessions")
-async def list_sessions():
-    """List all active sessions."""
-    return {
-        sid: {
-            "email": s["customer_email"],
-            "name": f"{s['customer_first_name']} {s['customer_last_name']}",
-            "created_at": s["created_at"],
-        }
-        for sid, s in sessions.items()
-    }
+@app.get("/sessions", response_model=List[SessionListItem])
+async def list_past_sessions(email: Optional[str] = None):
+    """List all available chat sessions from history."""
+    rows = database.list_sessions(email)
+    return [
+        SessionListItem(
+            session_id=r["session_id"],
+            email=r["customer_email"] or "",
+            name=r["customer_name"] or "Unknown",
+            created_at=r["created_at"],
+            preview=r["preview"]
+        ) for r in rows
+    ]

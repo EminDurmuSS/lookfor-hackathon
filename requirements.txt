@@ -1,6 +1,7 @@
 langgraph
 langchain-anthropic
 langchain-core
+langgraph-checkpoint-sqlite
 fastapi
 uvicorn
 streamlit
