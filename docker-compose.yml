@@ -1,0 +1,15 @@
+version: "3.8"
+
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000" # FastAPI
+      - "8501:8501" # Streamlit
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - API_URL=${API_URL}
+      - APP_TIMEZONE=${APP_TIMEZONE:-UTC}
+    volumes:
+      - ./tickets:/app/tickets
+    restart: unless-stopped

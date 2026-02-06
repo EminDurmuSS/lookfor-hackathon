@@ -1,0 +1,10 @@
+langgraph
+langchain-anthropic
+langchain-core
+fastapi
+uvicorn
+streamlit
+httpx
+pydantic
+python-dotenv
+websockets
