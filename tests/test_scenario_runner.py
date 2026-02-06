@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 ═══════════════════════════════════════════════════════════════════════════════
-NatPat Multi-Agent System — Comprehensive Scenario Test Runner  (v2.0)
+NatPat Multi-Agent System — Comprehensive Scenario Test Runner  (v2.1)
 ═══════════════════════════════════════════════════════════════════════════════
 
 Tests the live multi-agent system against the mock API using scenarios
@@ -18,19 +18,25 @@ Produces a detailed .log file with:
   - Per-scenario PASS/FAIL with reason
   - Summary statistics
 
+Additionally produces a FAIL-ONLY log file with:
+  - Only failed/errored scenarios + failure reasons
+  - Last response snippet for quick debugging
+  - Summary footer
+
 Usage:
   # 1. Start mock API:   uvicorn mock_api_server:app --port 8080
   # 2. Start main app:   uvicorn src.main:app --port 8000
   # 3. Run tests:         python test_scenario_runner.py
 
   Options via environment variables:
-    APP_URL       — Main app URL (default: http://localhost:8000)
-    MOCK_API_URL  — Mock API URL (default: http://localhost:8080)
-    LOG_FILE      — Output log file (default: test_results_{timestamp}.log)
-    SCENARIOS     — Comma-separated scenario IDs or 'all' (default: all)
-    CATEGORIES    — Comma-separated categories to run (default: all)
-    RESET_BETWEEN — Reset mock API state between scenarios (default: true)
-    VERBOSE       — Show full JSON payloads in log (default: true)
+    APP_URL        — Main app URL (default: http://localhost:8000)
+    MOCK_API_URL   — Mock API URL (default: http://localhost:8080)
+    LOG_FILE       — Output log file (default: test_results_{timestamp}.log)
+    FAIL_LOG_FILE  — Fail-only log file (default: test_failures_{timestamp}.log)
+    SCENARIOS      — Comma-separated scenario IDs or 'all' (default: all)
+    CATEGORIES     — Comma-separated categories to run (default: all)
+    RESET_BETWEEN  — Reset mock API state between scenarios (default: true)
+    VERBOSE        — Show full JSON payloads in log (default: true)
 """
 
 from __future__ import annotations
@@ -58,6 +64,7 @@ VERBOSE = os.getenv("VERBOSE", "true").lower() == "true"
 
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 LOG_FILE = os.getenv("LOG_FILE", f"test_results_{timestamp}.log")
+FAIL_LOG_FILE = os.getenv("FAIL_LOG_FILE", f"test_failures_{timestamp}.log")
 
 TIMEOUT = 120.0  # seconds per LLM call — generous for ReAct loops
 
@@ -129,6 +136,41 @@ def reset_mock_api() -> bool:
         return False
 
 
+def configure_mock_responses(mock_responses: dict) -> bool:
+    """Queue mock_tool_responses into the mock API for scenario isolation."""
+    if not mock_responses:
+        return True
+    try:
+        for tool_name, response in mock_responses.items():
+            r = client.post(
+                f"{MOCK_API_URL}/admin/set_mock_override",
+                json={"tool_name": tool_name, "response": response}
+            )
+            if r.status_code != 200:
+                return False
+        return True
+    except Exception:
+        return False
+
+
+def clear_mock_overrides() -> bool:
+    """Clear all queued mock overrides after scenario completes."""
+    try:
+        r = client.post(f"{MOCK_API_URL}/admin/clear_mock_overrides")
+        return r.status_code == 200
+    except Exception:
+        return False
+
+
+def set_mock_time_for_day(day_name: str) -> bool:
+    """Set mock API time for test_day scenarios."""
+    try:
+        r = client.post(f"{MOCK_API_URL}/admin/set_time", json={"day": day_name})
+        return r.status_code == 200
+    except Exception:
+        return False
+
+
 def check_health(url: str) -> bool:
     try:
         r = client.get(f"{url}/health", timeout=5)
@@ -181,13 +223,10 @@ def _no_forbidden(text: str) -> bool:
     return not any(f in low for f in forbidden)
 
 
-
-
 # ═══════════════════════════════════════════════════════════════════════════════
 # Scenario Loading from JSON
 # ═══════════════════════════════════════════════════════════════════════════════
 
-# Path to the JSON scenarios file
 SCENARIOS_JSON_PATH = os.path.join(os.path.dirname(__file__), "test_scenarios.json")
 
 DEFAULT_CUSTOMER = {
@@ -206,7 +245,7 @@ def _build_checks_from_expected(expected: dict) -> list[tuple[str, callable]]:
     Each check is a lambda that receives (response_dict, trace_dict).
     """
     checks = []
-    
+
     # ── Intent / Agent checks ─────────────────────────────────────────────
     if "intent" in expected:
         intent = expected["intent"]
@@ -214,28 +253,28 @@ def _build_checks_from_expected(expected: dict) -> list[tuple[str, callable]]:
             f"Intent = {intent}",
             lambda r, t, i=intent: r.get("intent", r.get("ticket_category", "")) == i
         ))
-    
+
     if "agent" in expected:
         agent = expected["agent"]
         checks.append((
             f"Agent = {agent}",
             lambda r, t, a=agent: r.get("agent", r.get("current_agent", "")) == a
         ))
-    
+
     # ── Escalation checks ─────────────────────────────────────────────────
     if "escalation" in expected:
         esc = expected["escalation"]
         if esc is True:
             checks.append((
                 "Is escalated",
-                lambda r, t: r.get("is_escalated", False) == True
+                lambda r, t: r.get("is_escalated", False) is True
             ))
         elif esc is False:
             checks.append((
                 "Not escalated",
-                lambda r, t: r.get("is_escalated", False) == False
+                lambda r, t: r.get("is_escalated", False) is False
             ))
-    
+
     # ── Handoff checks ────────────────────────────────────────────────────
     if "handoff_to" in expected:
         target = expected["handoff_to"]
@@ -244,7 +283,7 @@ def _build_checks_from_expected(expected: dict) -> list[tuple[str, callable]]:
             lambda r, t, tgt=target: r.get("agent", r.get("current_agent", "")) == tgt
             or t.get("handoff_target") == tgt
         ))
-    
+
     # ── Response content checks ───────────────────────────────────────────
     if "response_must_contain" in expected:
         keywords = expected["response_must_contain"]
@@ -252,35 +291,35 @@ def _build_checks_from_expected(expected: dict) -> list[tuple[str, callable]]:
             f"Response contains: {keywords}",
             lambda r, t, kw=keywords: _has_any(r.get("response", ""), kw)
         ))
-    
+
     if "response_must_not_contain" in expected:
         forbidden = expected["response_must_not_contain"]
         checks.append((
             f"Response must NOT contain: {forbidden}",
             lambda r, t, f=forbidden: not _has_any(r.get("response", ""), f)
         ))
-    
+
     if "response_must_end_with_signature" in expected:
         sig = expected["response_must_end_with_signature"]
         checks.append((
             f"Signed as {sig}",
             lambda r, t, s=sig: s.lower() in r.get("response", "").lower()
         ))
-    
+
     if "wait_promise_must_contain" in expected:
         keywords = expected["wait_promise_must_contain"]
         checks.append((
             f"Wait promise mentions: {keywords}",
             lambda r, t, kw=keywords: _has_any(r.get("response", ""), kw)
         ))
-    
+
     if "response_should_ask" in expected:
         keywords = expected["response_should_ask"]
         checks.append((
             f"Response asks about: {keywords}",
             lambda r, t, kw=keywords: _has_any(r.get("response", ""), kw)
         ))
-    
+
     # ── Tool call checks ──────────────────────────────────────────────────
     if "tools_called" in expected:
         tools = expected["tools_called"]
@@ -288,7 +327,7 @@ def _build_checks_from_expected(expected: dict) -> list[tuple[str, callable]]:
             f"Tools called: {tools}",
             lambda r, t, tl=tools: _check_tools_called(t, tl)
         ))
-    
+
     # ── Boolean flags ─────────────────────────────────────────────────────
     bool_checks = [
         ("must_ask_reason", ["why", "reason", "happened"], True),
@@ -310,7 +349,7 @@ def _build_checks_from_expected(expected: dict) -> list[tuple[str, callable]]:
         ("must_share_usage_tips", ["tips", "try", "recommend", "suggest"], True),
         ("must_suggest_try_longer", ["try", "longer", "more", "days", "nights"], True),
     ]
-    
+
     for flag, keywords, should_contain in bool_checks:
         if expected.get(flag):
             if should_contain:
@@ -323,14 +362,13 @@ def _build_checks_from_expected(expected: dict) -> list[tuple[str, callable]]:
                     f"{flag.replace('_', ' ').title()}",
                     lambda r, t, kw=keywords: not _has_any(r.get("response", ""), kw)
                 ))
-    
+
     # ── Default guardrail checks ──────────────────────────────────────────
-    # Always check for clean output
     checks.append((
         "No internal markers (THOUGHT/ACTION/gid://)",
         lambda r, t: _no_forbidden(r.get("response", ""))
     ))
-    
+
     return checks
 
 
@@ -343,44 +381,40 @@ def _check_tools_called(trace: dict, expected_tools: list[str]) -> bool:
             tool_name = entry.get("tool_name", "")
             if tool_name:
                 called.add(tool_name)
-    
-    # Also check tool_calls_log
+
     tool_calls_log = trace.get("tool_calls_log", [])
     for tc in tool_calls_log:
         if isinstance(tc, dict) and tc.get("tool_name"):
             called.add(tc["tool_name"])
-    
+
     return all(t in called for t in expected_tools)
 
 
 def load_scenarios_from_json() -> list[dict]:
     """Load and parse scenarios from test_scenarios.json."""
     global SCENARIOS
-    
+
     if not os.path.exists(SCENARIOS_JSON_PATH):
         print(f"⚠️ WARNING: {SCENARIOS_JSON_PATH} not found. Using empty scenario list.")
         return []
-    
+
     with open(SCENARIOS_JSON_PATH, "r", encoding="utf-8") as f:
         data = json.load(f)
-    
+
     raw_scenarios = data.get("scenarios", [])
     loaded = []
-    
+
     for sc in raw_scenarios:
-        # Extract customer messages only (skip agent messages in history)
         messages = []
         for msg in sc.get("messages", []):
             if msg.get("role") == "customer":
                 messages.append(msg.get("content", ""))
-        
-        # Build checks from expected block
+
         expected = sc.get("expected", {})
         checks = _build_checks_from_expected(expected)
-        
-        # Use scenario customer or default
+
         customer = sc.get("customer", DEFAULT_CUSTOMER)
-        
+
         scenario_obj = {
             "id": sc.get("id", "UNKNOWN"),
             "title": sc.get("title", "Untitled"),
@@ -393,13 +427,12 @@ def load_scenarios_from_json() -> list[dict]:
             "test_day": sc.get("test_day"),
         }
         loaded.append(scenario_obj)
-    
+
     SCENARIOS = loaded
     print(f"✅ Loaded {len(SCENARIOS)} scenarios from {SCENARIOS_JSON_PATH}")
     return SCENARIOS
 
 
-# Load scenarios on module import
 load_scenarios_from_json()
 
 
@@ -424,7 +457,6 @@ def log_detailed_trace(logger: DualLogger, trace_data: dict):
     """Log the full session trace with maximum detail."""
     trace = trace_data.get("trace", trace_data)
 
-    # ── State Snapshot ───────────────────────────────────────────────
     logger.log("      ┌─────────────────────────────────────────────────────────┐")
     logger.log("      │                  📋 STATE SNAPSHOT                      │")
     logger.log("      └─────────────────────────────────────────────────────────┘")
@@ -461,14 +493,12 @@ def log_detailed_trace(logger: DualLogger, trace_data: dict):
             logger.log(f"         {label:25s}: {val}")
     logger.log()
 
-    # ── Agent Reasoning Chain ────────────────────────────────────────
     reasoning = trace.get("agent_reasoning", [])
     if reasoning:
         logger.log("      ┌─────────────────────────────────────────────────────────┐")
         logger.log("      │              🧠 AGENT REASONING CHAIN                   │")
         logger.log("      └─────────────────────────────────────────────────────────┘")
         for i, step in enumerate(reasoning, 1):
-            # Detect the type of reasoning step for better formatting
             if step.startswith("HANDOFF:"):
                 logger.log(f"         🔄 [{i:2d}] {step}")
             elif step.startswith("ESCALATED"):
@@ -479,7 +509,6 @@ def log_detailed_trace(logger: DualLogger, trace_data: dict):
                 logger.log(f"         💭 [{i:2d}] {step}")
         logger.log()
 
-    # ── Step-by-Step Trace ───────────────────────────────────────────
     traces = trace.get("traces", [])
     if traces:
         logger.log("      ┌─────────────────────────────────────────────────────────┐")
@@ -511,7 +540,6 @@ def log_detailed_trace(logger: DualLogger, trace_data: dict):
                     else:
                         logger.log(f"                     {chunk}")
 
-            # Tool call details
             tool_name = entry.get("tool_name")
             if tool_name:
                 tool_input = entry.get("tool_input", entry.get("input", {}))
@@ -535,16 +563,14 @@ def log_detailed_trace(logger: DualLogger, trace_data: dict):
                     if success is not None:
                         logger.log(f"            ╚═ Success: {'✅ true' if success else '❌ false'}")
                     else:
-                        logger.log(f"            ╚═══════════")
+                        logger.log("            ╚═══════════")
                 else:
-                    logger.log(f"            ╚═══════════")
+                    logger.log("            ╚═══════════")
 
-            # Guardrail issues
             issues = entry.get("issues", entry.get("guardrail_issues", []))
             if issues:
                 logger.log(f"            ⚠️ Issues: {issues}")
 
-            # Reflection/Revision details
             if action_type in ("reflection", "revision"):
                 rule = entry.get("rule_violated", entry.get("rule"))
                 fix = entry.get("suggested_fix", entry.get("fix"))
@@ -555,7 +581,6 @@ def log_detailed_trace(logger: DualLogger, trace_data: dict):
 
         logger.log()
 
-    # ── Tool Calls Summary ───────────────────────────────────────────
     tool_calls = [t for t in traces if t.get("action_type") in ("tool_call", "tool_execution")]
     if not tool_calls:
         tool_calls_log = trace.get("tool_calls_log", [])
@@ -575,7 +600,6 @@ def log_detailed_trace(logger: DualLogger, trace_data: dict):
             logger.log(f"         {s_icon} {tn}({json.dumps(ti, default=str, ensure_ascii=False)[:150]})")
         logger.log()
 
-    # ── Actions Taken ────────────────────────────────────────────────
     actions = trace.get("actions_taken", [])
     if actions:
         logger.log("      ⚡ ACTIONS TAKEN:")
@@ -583,7 +607,6 @@ def log_detailed_trace(logger: DualLogger, trace_data: dict):
             logger.log(f"         • {a}")
         logger.log()
 
-    # ── Output Guardrail Issues ──────────────────────────────────────
     og_issues = trace.get("output_guardrail_issues", [])
     if og_issues:
         logger.log("      🛡️ OUTPUT GUARDRAIL ISSUES:")
@@ -591,14 +614,12 @@ def log_detailed_trace(logger: DualLogger, trace_data: dict):
             logger.log(f"         ⚠️ {issue}")
         logger.log()
 
-    # ── Escalation Payload ───────────────────────────────────────────
     esc_payload = trace.get("escalation_payload")
     if esc_payload:
         logger.log("      🚨 ESCALATION PAYLOAD:")
         logger.json_block(esc_payload, indent_level=10)
         logger.log()
 
-    # ── Extra trace fields ───────────────────────────────────────────
     if VERBOSE:
         shown = {f[0] for f in state_fields} | {
             "traces", "agent_reasoning", "tool_calls_log",
@@ -646,12 +667,19 @@ def run_scenario(logger: DualLogger, sc: dict, index: int, total: int) -> dict:
     start_time = time.time()
 
     try:
-        # ── Reset mock state ─────────────────────────────────────────
-        if RESET_BETWEEN:
+        # Configure test_day FIRST (this triggers a reset with recalculated dates)
+        if sc.get("test_day"):
+            day_ok = set_mock_time_for_day(sc["test_day"])
+            logger.log(f"    [Mock time → {sc['test_day']}: {'OK' if day_ok else 'FAILED'}]")
+        elif RESET_BETWEEN:
             ok = reset_mock_api()
             logger.log(f"    [Mock API state reset: {'OK' if ok else 'FAILED'}]")
 
-        # ── Start session ────────────────────────────────────────────
+        # Inject mock_tool_responses if specified
+        if sc.get("mock_tool_responses"):
+            mock_ok = configure_mock_responses(sc["mock_tool_responses"])
+            logger.log(f"    [Mock overrides: {'OK' if mock_ok else 'FAILED'} — {list(sc['mock_tool_responses'].keys())}]")
+
         logger.subsection("SESSION START")
         session_data = start_session(sc["customer"])
         session_id = session_data.get("session_id", "")
@@ -664,12 +692,11 @@ def run_scenario(logger: DualLogger, sc: dict, index: int, total: int) -> dict:
             logger.log("      Full session start response:")
             logger.json_block(session_data, indent_level=8)
 
-        # ── Send messages (multi-turn) ───────────────────────────────
         last_response = None
 
         for turn_idx, msg in enumerate(sc["messages"], 1):
             logger.subsection(f"TURN {turn_idx}/{len(sc['messages'])}")
-            logger.log(f"      📨 CUSTOMER INPUT:")
+            logger.log("      📨 CUSTOMER INPUT:")
             logger.log(f"         \"{msg}\"")
             logger.log()
 
@@ -693,7 +720,6 @@ def run_scenario(logger: DualLogger, sc: dict, index: int, total: int) -> dict:
             }
             result["turns"].append(turn_data)
 
-            # ── Per-turn response summary ────────────────────────────
             logger.log(f"      🤖 AGENT RESPONSE (took {turn_duration}s):")
             logger.log(f"         Agent:          {turn_data['agent'] or 'N/A'}")
             logger.log(f"         Intent:         {turn_data['intent'] or 'N/A'} ({turn_data['confidence']}%)")
@@ -701,13 +727,12 @@ def run_scenario(logger: DualLogger, sc: dict, index: int, total: int) -> dict:
             logger.log(f"         Revised:        {turn_data['was_revised']}")
             logger.log(f"         Intent Shifted: {turn_data['intent_shifted']}")
             if turn_data["actions_taken"]:
-                logger.log(f"         Actions:")
+                logger.log("         Actions:")
                 for a in turn_data["actions_taken"]:
                     logger.log(f"            • {a}")
             logger.log()
 
-            # ── Response text ────────────────────────────────────────
-            logger.log(f"      📝 RESPONSE TEXT:")
+            logger.log("      📝 RESPONSE TEXT:")
             logger.log(f"      ┌{'─' * 66}┐")
             for line in resp.get("response", "(empty)").split("\n"):
                 if len(line) <= 64:
@@ -717,7 +742,6 @@ def run_scenario(logger: DualLogger, sc: dict, index: int, total: int) -> dict:
             logger.log(f"      └{'─' * 66}┘")
             logger.log()
 
-            # ── Per-turn extra fields (verbose) ──────────────────────
             if VERBOSE:
                 extra_resp = {k: v for k, v in resp.items()
                               if k not in ("response", "session_id") and v}
@@ -726,7 +750,6 @@ def run_scenario(logger: DualLogger, sc: dict, index: int, total: int) -> dict:
                     logger.json_block(extra_resp, indent_level=10, max_lines=50)
                     logger.log()
 
-        # ── Get session trace ────────────────────────────────────────
         logger.subsection("SESSION TRACE (Post-Conversation)")
         trace_data = get_trace(session_id)
 
@@ -736,7 +759,6 @@ def run_scenario(logger: DualLogger, sc: dict, index: int, total: int) -> dict:
             logger.log("      ⚠️  Trace endpoint returned no data.")
             logger.log("         (Check /session/{id}/trace endpoint)")
 
-        # ── Run checks ───────────────────────────────────────────────
         logger.subsection("ASSERTION CHECKS")
         trace_obj = trace_data.get("trace", {}) if trace_data else {}
 
@@ -761,6 +783,10 @@ def run_scenario(logger: DualLogger, sc: dict, index: int, total: int) -> dict:
         logger.log(f"\n      💥 SCENARIO ERROR: {exc}")
         logger.log(traceback.format_exc())
 
+    finally:
+        # Always clear mock overrides to prevent cross-scenario contamination
+        clear_mock_overrides()
+
     result["duration_s"] = round(time.time() - start_time, 2)
     status = "✅ PASSED" if result["passed"] else "❌ FAILED"
     logger.log(f"\n    {status} — {result['checks_passed']}/{result['checks_total']} checks [{result['duration_s']}s]")
@@ -774,161 +800,242 @@ def run_scenario(logger: DualLogger, sc: dict, index: int, total: int) -> dict:
 
 def main():
     logger = DualLogger(LOG_FILE)
+    fail_f = None
 
-    logger.section("NatPat Multi-Agent System — Scenario Test Report (v2.0)")
-    logger.log(f"  Timestamp:      {datetime.now().isoformat()}")
-    logger.log(f"  App URL:        {APP_URL}")
-    logger.log(f"  Mock API URL:   {MOCK_API_URL}")
-    logger.log(f"  Log File:       {LOG_FILE}")
-    logger.log(f"  Reset Between:  {RESET_BETWEEN}")
-    logger.log(f"  Verbose:        {VERBOSE}")
-    logger.log(f"  Total Scenarios: {len(SCENARIOS)}")
-    logger.log()
+    try:
+        # Open fail-only log file
+        fail_f = open(FAIL_LOG_FILE, "w", encoding="utf-8")
+        fail_f.write("NatPat Multi-Agent System — FAILED SCENARIOS ONLY\n")
+        fail_f.write(f"Timestamp: {datetime.now().isoformat()}\n")
+        fail_f.write(f"App URL: {APP_URL}\n")
+        fail_f.write(f"Mock API URL: {MOCK_API_URL}\n")
+        fail_f.write(f"Main Log: {LOG_FILE}\n")
+        fail_f.write("=" * 90 + "\n\n")
+        fail_f.flush()
 
-    # ── Health checks ────────────────────────────────────────────────
-    logger.subsection("HEALTH CHECKS")
-    app_ok = check_health(APP_URL)
-    mock_ok = check_health(MOCK_API_URL)
-    logger.log(f"    Main App ({APP_URL}):   {'🟢 OK' if app_ok else '🔴 DOWN'}")
-    logger.log(f"    Mock API ({MOCK_API_URL}): {'🟢 OK' if mock_ok else '🔴 DOWN'}")
-
-    if not app_ok or not mock_ok:
-        logger.log("\n    ❌ Cannot proceed — servers not running.")
-        logger.log("    Start with:")
-        logger.log("      uvicorn mock_api_server:app --port 8080")
-        logger.log("      uvicorn src.main:app --port 8000")
-        logger.close()
-        sys.exit(1)
-
-    # ── Filter scenarios ─────────────────────────────────────────────
-    scenarios_to_run = SCENARIOS
-
-    if SCENARIO_FILTER != "all":
-        ids = {s.strip() for s in SCENARIO_FILTER.split(",")}
-        scenarios_to_run = [s for s in scenarios_to_run if s["id"] in ids]
-
-    if CATEGORY_FILTER != "all":
-        cats = {c.strip().upper() for c in CATEGORY_FILTER.split(",")}
-        scenarios_to_run = [s for s in scenarios_to_run if s["category"] in cats]
-
-    if not scenarios_to_run:
-        logger.log(f"\n    ⚠️ No scenarios matched filters.")
-        logger.log(f"    Available IDs: {[s['id'] for s in SCENARIOS]}")
-        logger.log(f"    Available categories: {sorted(set(s['category'] for s in SCENARIOS))}")
-        logger.close()
-        sys.exit(1)
-
-    logger.log(f"\n    Running {len(scenarios_to_run)} scenarios...")
-    logger.log(f"    IDs: {[s['id'] for s in scenarios_to_run]}")
-    logger.log()
-
-    # ── Run ──────────────────────────────────────────────────────────
-    results = []
-    total_start = time.time()
-
-    for idx, sc in enumerate(scenarios_to_run, 1):
-        res = run_scenario(logger, sc, idx, len(scenarios_to_run))
-        results.append(res)
-
-    total_duration = round(time.time() - total_start, 2)
-
-    # ═══════════════════════════════════════════════════════════════════
-    # Summary Report
-    # ═══════════════════════════════════════════════════════════════════
-
-    logger.section("TEST SUMMARY", "═")
-
-    passed = sum(1 for r in results if r["passed"])
-    failed = sum(1 for r in results if not r["passed"])
-    errored = sum(1 for r in results if r.get("error"))
-    total_checks = sum(r["checks_total"] for r in results)
-    passed_checks = sum(r["checks_passed"] for r in results)
-
-    logger.log(f"  Scenarios:        {len(results)} total")
-    logger.log(f"  Passed:           {passed} ✅")
-    logger.log(f"  Failed:           {failed} ❌")
-    logger.log(f"  Errors:           {errored} 💥")
-    logger.log(f"  Checks:           {passed_checks}/{total_checks} ({round(passed_checks/max(total_checks,1)*100)}%)")
-    logger.log(f"  Total Duration:   {total_duration}s")
-    logger.log(f"  Avg per scenario: {round(total_duration/max(len(results),1),1)}s")
-    logger.log()
-
-    # ── Category breakdown ───────────────────────────────────────────
-    categories: dict[str, dict] = {}
-    for r in results:
-        cat = r["category"]
-        if cat not in categories:
-            categories[cat] = {"passed": 0, "failed": 0, "total_time": 0}
-        if r["passed"]:
-            categories[cat]["passed"] += 1
-        else:
-            categories[cat]["failed"] += 1
-        categories[cat]["total_time"] += r["duration_s"]
-
-    logger.log("  By Category:")
-    logger.log(f"    {'Category':20s} {'Pass':>5s} {'Fail':>5s} {'Total':>6s} {'Time':>8s}")
-    logger.log(f"    {'─'*20} {'─'*5} {'─'*5} {'─'*6} {'─'*8}")
-    for cat in sorted(categories.keys()):
-        c = categories[cat]
-        total_cat = c["passed"] + c["failed"]
-        logger.log(f"    {cat:20s} {c['passed']:5d} {c['failed']:5d} {total_cat:6d} {c['total_time']:7.1f}s")
-    logger.log()
-
-    # ── Pass rate bar ────────────────────────────────────────────────
-    if results:
-        bar_len = 40
-        fill = round(passed / len(results) * bar_len)
-        bar = "█" * fill + "░" * (bar_len - fill)
-        pct = round(passed / len(results) * 100)
-        logger.log(f"  Pass Rate: [{bar}] {pct}% ({passed}/{len(results)})")
+        logger.section("NatPat Multi-Agent System — Scenario Test Report (v2.1)")
+        logger.log(f"  Timestamp:       {datetime.now().isoformat()}")
+        logger.log(f"  App URL:         {APP_URL}")
+        logger.log(f"  Mock API URL:    {MOCK_API_URL}")
+        logger.log(f"  Log File:        {LOG_FILE}")
+        logger.log(f"  Fail Log File:   {FAIL_LOG_FILE}")
+        logger.log(f"  Reset Between:   {RESET_BETWEEN}")
+        logger.log(f"  Verbose:         {VERBOSE}")
+        logger.log(f"  Total Scenarios: {len(SCENARIOS)}")
         logger.log()
 
-    # ── Failed scenarios ─────────────────────────────────────────────
-    if failed > 0:
-        logger.subsection("FAILED SCENARIOS")
+        # ── Health checks ────────────────────────────────────────────────
+        logger.subsection("HEALTH CHECKS")
+        app_ok = check_health(APP_URL)
+        mock_ok = check_health(MOCK_API_URL)
+        logger.log(f"    Main App ({APP_URL}):   {'🟢 OK' if app_ok else '🔴 DOWN'}")
+        logger.log(f"    Mock API ({MOCK_API_URL}): {'🟢 OK' if mock_ok else '🔴 DOWN'}")
+
+        if not app_ok or not mock_ok:
+            logger.log("\n    ❌ Cannot proceed — servers not running.")
+            logger.log("    Start with:")
+            logger.log("      uvicorn mock_api_server:app --port 8080")
+            logger.log("      uvicorn src.main:app --port 8000")
+
+            fail_f.write("❌ Cannot proceed — servers not running.\n")
+            fail_f.write(f"Main App OK: {app_ok}\n")
+            fail_f.write(f"Mock API OK: {mock_ok}\n\n")
+            fail_f.write("=" * 90 + "\n")
+            fail_f.flush()
+
+            logger.close()
+            sys.exit(1)
+
+        # ── Filter scenarios ─────────────────────────────────────────────
+        scenarios_to_run = SCENARIOS
+
+        if SCENARIO_FILTER != "all":
+            ids = {s.strip() for s in SCENARIO_FILTER.split(",")}
+            scenarios_to_run = [s for s in scenarios_to_run if s["id"] in ids]
+
+        if CATEGORY_FILTER != "all":
+            cats = {c.strip().upper() for c in CATEGORY_FILTER.split(",")}
+            scenarios_to_run = [s for s in scenarios_to_run if s["category"] in cats]
+
+        if not scenarios_to_run:
+            logger.log("\n    ⚠️ No scenarios matched filters.")
+            logger.log(f"    Available IDs: {[s['id'] for s in SCENARIOS]}")
+            logger.log(f"    Available categories: {sorted(set(s['category'] for s in SCENARIOS))}")
+
+            fail_f.write("⚠️ No scenarios matched filters.\n")
+            fail_f.write(f"SCENARIOS filter: {SCENARIO_FILTER}\n")
+            fail_f.write(f"CATEGORIES filter: {CATEGORY_FILTER}\n")
+            fail_f.flush()
+
+            logger.close()
+            sys.exit(1)
+
+        logger.log(f"\n    Running {len(scenarios_to_run)} scenarios...")
+        logger.log(f"    IDs: {[s['id'] for s in scenarios_to_run]}")
+        logger.log()
+
+        # ── Run ──────────────────────────────────────────────────────────
+        results = []
+        total_start = time.time()
+
+        for idx, sc in enumerate(scenarios_to_run, 1):
+            res = run_scenario(logger, sc, idx, len(scenarios_to_run))
+            results.append(res)
+
+            # Write fail-only entry
+            if not res["passed"]:
+                fail_f.write(f"❌ {res['id']}: {res['title']}  (Category: {res['category']})\n")
+                fail_f.write(
+                    f"   Duration: {res.get('duration_s', '?')}s | Checks: {res.get('checks_passed', 0)}/{res.get('checks_total', 0)}\n"
+                )
+
+                if res.get("error"):
+                    fail_f.write(f"   💥 Error: {res['error']}\n")
+
+                failures = res.get("failures", [])
+                if failures:
+                    fail_f.write("   Failures:\n")
+                    for f in failures:
+                        fail_f.write(f"     - {f}\n")
+
+                last_resp = ""
+                if res.get("turns"):
+                    last_resp = (res["turns"][-1].get("response", "") or "").strip()
+
+                if last_resp:
+                    snippet = last_resp.replace("\n", " ")[:300]
+                    fail_f.write(f"   Last response: \"{snippet}{'…' if len(last_resp) > 300 else ''}\"\n")
+
+                fail_f.write("\n" + ("-" * 90) + "\n\n")
+                fail_f.flush()
+
+        total_duration = round(time.time() - total_start, 2)
+
+        # ═══════════════════════════════════════════════════════════════════
+        # Summary Report
+        # ═══════════════════════════════════════════════════════════════════
+
+        logger.section("TEST SUMMARY", "═")
+
+        passed = sum(1 for r in results if r["passed"])
+        failed = sum(1 for r in results if not r["passed"])
+        errored = sum(1 for r in results if r.get("error"))
+        total_checks = sum(r["checks_total"] for r in results)
+        passed_checks = sum(r["checks_passed"] for r in results)
+
+        logger.log(f"  Scenarios:        {len(results)} total")
+        logger.log(f"  Passed:           {passed} ✅")
+        logger.log(f"  Failed:           {failed} ❌")
+        logger.log(f"  Errors:           {errored} 💥")
+        logger.log(f"  Checks:           {passed_checks}/{total_checks} ({round(passed_checks/max(total_checks,1)*100)}%)")
+        logger.log(f"  Total Duration:   {total_duration}s")
+        logger.log(f"  Avg per scenario: {round(total_duration/max(len(results),1),1)}s")
+        logger.log()
+
+        # ── Category breakdown ───────────────────────────────────────────
+        categories: dict[str, dict] = {}
         for r in results:
-            if not r["passed"]:
-                logger.log(f"    ❌ {r['id']}: {r['title']}")
-                if r.get("error"):
-                    logger.log(f"       💥 Error: {r['error']}")
-                for f in r.get("failures", []):
-                    logger.log(f"       • {f}")
-                if r.get("turns"):
-                    last_resp = r["turns"][-1].get("response", "")[:150]
-                    logger.log(f"       Last response: \"{last_resp}…\"")
+            cat = r["category"]
+            if cat not in categories:
+                categories[cat] = {"passed": 0, "failed": 0, "total_time": 0}
+            if r["passed"]:
+                categories[cat]["passed"] += 1
+            else:
+                categories[cat]["failed"] += 1
+            categories[cat]["total_time"] += r["duration_s"]
+
+        logger.log("  By Category:")
+        logger.log(f"    {'Category':20s} {'Pass':>5s} {'Fail':>5s} {'Total':>6s} {'Time':>8s}")
+        logger.log(f"    {'─'*20} {'─'*5} {'─'*5} {'─'*6} {'─'*8}")
+        for cat in sorted(categories.keys()):
+            c = categories[cat]
+            total_cat = c["passed"] + c["failed"]
+            logger.log(f"    {cat:20s} {c['passed']:5d} {c['failed']:5d} {total_cat:6d} {c['total_time']:7.1f}s")
         logger.log()
 
-    # ── Timing ───────────────────────────────────────────────────────
-    logger.subsection("TIMING (slowest first)")
-    for r in sorted(results, key=lambda x: -x["duration_s"]):
-        status = "✅" if r["passed"] else "❌"
-        logger.log(f"    {status} {r['id']:20s} {r['duration_s']:6.1f}s  ({r['checks_passed']}/{r['checks_total']})")
-    logger.log()
+        # ── Pass rate bar ────────────────────────────────────────────────
+        if results:
+            bar_len = 40
+            fill = round(passed / len(results) * bar_len)
+            bar = "█" * fill + "░" * (bar_len - fill)
+            pct = round(passed / len(results) * 100)
+            logger.log(f"  Pass Rate: [{bar}] {pct}% ({passed}/{len(results)})")
+            logger.log()
 
-    # ── Multi-turn analysis ──────────────────────────────────────────
-    multi_turn = [r for r in results if len(r.get("turns", [])) > 1]
-    if multi_turn:
-        logger.subsection("MULTI-TURN ANALYSIS")
-        for r in multi_turn:
-            logger.log(f"    {r['id']:20s}: {len(r['turns'])} turns {'✅' if r['passed'] else '❌'}")
-            for t in r["turns"]:
-                intent = t.get("intent", "?")
-                agent = t.get("agent", "?")
-                shifted = " ↩️SHIFT" if t.get("intent_shifted") else ""
-                escalated = " 🚨ESC" if t.get("is_escalated") else ""
-                logger.log(f"      Turn {t['turn']}: intent={intent} agent={agent}{shifted}{escalated} [{t.get('duration_s', '?')}s]")
+        # ── Failed scenarios ─────────────────────────────────────────────
+        if failed > 0:
+            logger.subsection("FAILED SCENARIOS")
+            for r in results:
+                if not r["passed"]:
+                    logger.log(f"    ❌ {r['id']}: {r['title']}")
+                    if r.get("error"):
+                        logger.log(f"       💥 Error: {r['error']}")
+                    for f in r.get("failures", []):
+                        logger.log(f"       • {f}")
+                    if r.get("turns"):
+                        last_resp = r["turns"][-1].get("response", "")[:150]
+                        logger.log(f"       Last response: \"{last_resp}…\"")
+            logger.log()
+
+        # ── Timing ───────────────────────────────────────────────────────
+        logger.subsection("TIMING (slowest first)")
+        for r in sorted(results, key=lambda x: -x["duration_s"]):
+            status = "✅" if r["passed"] else "❌"
+            logger.log(f"    {status} {r['id']:20s} {r['duration_s']:6.1f}s  ({r['checks_passed']}/{r['checks_total']})")
         logger.log()
 
-    logger.section("END OF REPORT")
-    logger.log(f"  Log saved to: {LOG_FILE}")
-    logger.close()
+        # ── Multi-turn analysis ──────────────────────────────────────────
+        multi_turn = [r for r in results if len(r.get("turns", [])) > 1]
+        if multi_turn:
+            logger.subsection("MULTI-TURN ANALYSIS")
+            for r in multi_turn:
+                logger.log(f"    {r['id']:20s}: {len(r['turns'])} turns {'✅' if r['passed'] else '❌'}")
+                for t in r["turns"]:
+                    intent = t.get("intent", "?")
+                    agent = t.get("agent", "?")
+                    shifted = " ↩️SHIFT" if t.get("intent_shifted") else ""
+                    escalated = " 🚨ESC" if t.get("is_escalated") else ""
+                    logger.log(
+                        f"      Turn {t['turn']}: intent={intent} agent={agent}{shifted}{escalated} [{t.get('duration_s', '?')}s]"
+                    )
+            logger.log()
 
-    print(f"\n{'═' * 70}")
-    print(f"  Results: {passed}/{len(results)} scenarios passed ({round(passed/max(len(results),1)*100)}%)")
-    print(f"  Log:     {LOG_FILE}")
-    print(f"{'═' * 70}")
+        # ── Write fail log footer summary ────────────────────────────────
+        fail_f.write("\n" + "=" * 90 + "\n")
+        fail_f.write("FAILURES SUMMARY\n")
+        fail_f.write(f"Total scenarios: {len(results)}\n")
+        fail_f.write(f"Passed: {passed}\n")
+        fail_f.write(f"Failed: {failed}\n")
+        fail_f.write(f"Errors: {errored}\n")
+        fail_f.write(f"Main log: {LOG_FILE}\n")
+        fail_f.write(f"Fail log: {FAIL_LOG_FILE}\n")
+        fail_f.write("=" * 90 + "\n")
+        fail_f.flush()
 
-    sys.exit(0 if failed == 0 else 1)
+        logger.section("END OF REPORT")
+        logger.log(f"  Log saved to:      {LOG_FILE}")
+        logger.log(f"  Fail log saved to: {FAIL_LOG_FILE}")
+        logger.close()
+
+        print(f"\n{'═' * 70}")
+        print(f"  Results:  {passed}/{len(results)} scenarios passed ({round(passed/max(len(results),1)*100)}%)")
+        print(f"  Log:      {LOG_FILE}")
+        print(f"  Fail Log: {FAIL_LOG_FILE}")
+        print(f"{'═' * 70}")
+
+        sys.exit(0 if failed == 0 else 1)
+
+    finally:
+        # Ensure files/client are closed even if sys.exit or exception occurs
+        try:
+            if fail_f and not fail_f.closed:
+                fail_f.close()
+        except Exception:
+            pass
+        try:
+            client.close()
+        except Exception:
+            pass
 
 
 if __name__ == "__main__":

@@ -1,0 +1,17 @@
+﻿flowchart LR
+    U[Operator] --> S[Streamlit UI]
+    D[Developer or Test Runner] --> A[FastAPI app]
+
+    S -->|POST /session/start| A
+    S -->|POST /session/message| A
+    S -->|GET /session/id/trace| A
+
+    A --> G[Compiled LangGraph singleton]
+    G --> M[MemorySaver checkpointer]
+    G --> L1[Anthropic Sonnet]
+    G --> L2[Anthropic Haiku]
+    G --> T[Tool API URL]
+
+    T --> Mock[Mock API server]
+
+    A --> Sess[In-memory sessions dict]

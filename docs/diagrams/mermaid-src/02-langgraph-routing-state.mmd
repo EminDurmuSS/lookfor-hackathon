@@ -1,0 +1,52 @@
+﻿stateDiagram-v2
+    [*] --> escalation_lock
+
+    escalation_lock --> post_escalation: is_escalated
+    escalation_lock --> input_guardrails: active
+
+    input_guardrails --> [*]: input_blocked
+    input_guardrails --> auto_escalate_health: flag_health_concern
+    input_guardrails --> intent_classifier: first turn
+    input_guardrails --> intent_shift_check: multi turn
+
+    auto_escalate_health --> escalation_handler
+
+    intent_classifier --> wismo_agent: high conf WISMO
+    intent_classifier --> issue_agent: high conf ISSUE intents
+    intent_classifier --> account_agent: high conf ACCOUNT intents
+    intent_classifier --> supervisor: low confidence
+
+    intent_shift_check --> wismo_agent
+    intent_shift_check --> issue_agent
+    intent_shift_check --> account_agent
+    intent_shift_check --> supervisor
+
+    supervisor --> wismo_agent
+    supervisor --> issue_agent
+    supervisor --> account_agent
+    supervisor --> output_guardrails: respond_direct
+    supervisor --> escalation_handler: escalate
+
+    wismo_agent --> output_guardrails
+    issue_agent --> output_guardrails
+    account_agent --> output_guardrails
+
+    output_guardrails --> escalation_handler: is_escalation
+    output_guardrails --> handoff_router: is_handoff
+    output_guardrails --> revise_response: output_guardrail_passed=false
+    output_guardrails --> reflection_validator: output_guardrail_passed=true
+
+    handoff_router --> wismo_agent
+    handoff_router --> issue_agent
+    handoff_router --> account_agent
+    handoff_router --> supervisor
+
+    reflection_validator --> [*]: reflection_passed=true
+    reflection_validator --> revise_response: reflection_passed=false and was_revised=false
+    reflection_validator --> [*]: reflection_passed=false and was_revised=true
+
+    revise_response --> output_guardrails_final
+    output_guardrails_final --> [*]
+
+    escalation_handler --> [*]
+    post_escalation --> [*]

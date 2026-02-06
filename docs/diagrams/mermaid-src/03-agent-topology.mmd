@@ -1,0 +1,24 @@
+﻿flowchart LR
+    S[Supervisor]
+    W[WISMO Agent]
+    I[Issue Agent]
+    A[Account Agent]
+    E[Escalation Handler]
+
+    S --> W
+    S --> I
+    S --> A
+    S --> E
+
+    W -->|HANDOFF| I
+    W -->|HANDOFF| A
+    I -->|HANDOFF| W
+    I -->|HANDOFF| A
+    A -->|HANDOFF| W
+    A -->|HANDOFF| I
+
+    W -->|ESCALATE| E
+    I -->|ESCALATE| E
+    A -->|ESCALATE| E
+
+    E --> L[Session lock: is_escalated=true]

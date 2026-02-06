@@ -1,0 +1,34 @@
+﻿flowchart TD
+    subgraph Agents[Agent Tool Visibility]
+        W[wismo_tools: 3]
+        I[issue_tools: 10]
+        A[account_tools: 11]
+    end
+
+    subgraph Wrappers[Tool Wrappers]
+        SH[shopify_tools.py: 14 wrappers]
+        SK[skio_tools.py: 5 wrappers]
+    end
+
+    subgraph Client[HTTP Client]
+        AC[api_client.api_call]
+        RETRY[timeout retry once]
+    end
+
+    subgraph API[Mock Tool API Aliases]
+        P1[hackhaton endpoints]
+        P2[hackathon endpoints]
+        P3[root endpoint aliases]
+    end
+
+    W --> SH
+    I --> SH
+    A --> SH
+    A --> SK
+
+    SH --> AC
+    SK --> AC
+    AC --> RETRY
+    RETRY --> P1
+    RETRY --> P2
+    RETRY --> P3

@@ -1,0 +1,28 @@
+﻿sequenceDiagram
+    participant C as Customer
+    participant AG as Active Agent Node
+    participant LLM as Sonnet LLM (bind_tools)
+    participant TG as Tool Guardrails
+    participant T as Shopify/Skio Tool
+    participant S as State
+
+    C->>AG: New message in state.messages
+    AG->>LLM: System prompt + conversation
+    LLM-->>AG: AI response with tool_calls
+
+    loop max 6 iterations
+        AG->>TG: Validate tool_name + args
+        alt blocked
+            TG-->>AG: not allowed + reason
+            AG->>S: append failed tool result
+        else allowed
+            TG-->>AG: corrected params
+            AG->>T: invoke corrected tool args
+            T-->>AG: tool result dict
+            AG->>S: append tool_calls_log and actions_taken
+        end
+        AG->>LLM: ToolMessage observation
+        LLM-->>AG: next response or final response
+    end
+
+    AG->>S: write AI final message and agent_reasoning

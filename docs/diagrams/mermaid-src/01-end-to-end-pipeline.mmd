@@ -1,0 +1,46 @@
+﻿flowchart TD
+    A[Customer Message] --> B[FastAPI POST /session/message]
+    B --> C[Build input state + thread_id]
+    C --> D{escalation_lock}
+
+    D -- is_escalated=true --> E[post_escalation]
+    D -- active --> F[input_guardrails]
+
+    F -- input_blocked --> Z([END])
+    F -- flag_health_concern --> G[auto_escalate_health]
+    F -- first human turn --> H[intent_classifier]
+    F -- multi-turn --> I[intent_shift_check]
+
+    H --> J{confidence >= 80}
+    J -- yes --> K[wismo or issue or account agent]
+    J -- no --> L[supervisor]
+
+    I --> M[current or shifted agent]
+
+    L --> N{supervisor_route}
+    N -- wismo/issue/account --> K
+    N -- respond_direct --> O[output_guardrails]
+    N -- escalate --> P[escalation_handler]
+
+    K --> O
+    M --> O
+    G --> P
+
+    O -- ESCALATE control msg --> P
+    O -- HANDOFF control msg --> Q[handoff_router]
+    O -- guardrail fail --> R[revise_response]
+    O -- pass --> S[reflection_validator]
+
+    Q --> T{handoff target}
+    T --> K
+    T --> L
+
+    S -- pass --> Z
+    S -- fail and was_revised=false --> R
+    S -- fail and was_revised=true --> Z
+
+    R --> U[output_guardrails_final]
+    U --> Z
+
+    P --> Z
+    E --> Z

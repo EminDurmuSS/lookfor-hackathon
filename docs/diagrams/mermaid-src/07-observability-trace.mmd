@@ -1,0 +1,16 @@
+﻿flowchart TD
+    A[Graph final state snapshot] --> B[build_session_trace]
+
+    B --> C[Parse agent_reasoning entries]
+    B --> D[Parse tool_calls_log entries]
+
+    C --> E[TraceEntry list]
+    D --> E
+
+    E --> F[SessionTrace object]
+    F --> G[GET /session/id/trace]
+    F --> H[Streamlit trace panel]
+
+    I[state fields] --> F
+    J[final ai message extraction] --> F
+    K[escalation payload passthrough] --> F
