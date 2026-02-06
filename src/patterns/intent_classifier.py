@@ -4,14 +4,18 @@
 Stage 1: Haiku classifies intent with confidence score.
 Stage 2: Deterministic code routes to agent (or supervisor fallback).
 Multi-turn: Haiku re-classifies to detect intent shifts.
+
+Updates:
+- Robust parsing: supports "INTENT|85" OR JSON {"intent": "...", "confidence": 85}
+- Safe when haiku_llm is None (falls back to GENERAL with 50 unless strict=True)
+- Confidence clamped to 0..100
+- Removes duplicate imports/duplicate returns
 """
 
 from __future__ import annotations
 
 import json
-from typing import Any
-
-from langchain_core.messages import AIMessage
+from typing import Any, Tuple
 
 from src.config import (
     CONFIDENCE_THRESHOLD,
@@ -23,24 +27,69 @@ from src.config import (
 from src.prompts.intent_classifier_prompt import INTENT_CLASSIFIER_PROMPT
 
 
+# ─── Helpers ────────────────────────────────────────────────────────────────
+
+def _clamp_confidence(x: Any, default: int = 50) -> int:
+    try:
+        val = int(x)
+    except (TypeError, ValueError):
+        val = default
+    return max(0, min(val, 100))
+
+
+def _parse_classifier_output(text: str) -> Tuple[str, int]:
+    """
+    Accepts:
+      - "WISMO|85"
+      - "WISMO | 85"
+      - JSON: {"intent":"WISMO","confidence":85}
+    Returns (intent, confidence).
+    """
+    raw = (text or "").strip()
+
+    # Try JSON first (some LLM prompts drift into JSON)
+    if raw.startswith("{") and raw.endswith("}"):
+        try:
+            obj = json.loads(raw)
+            intent = str(obj.get("intent", "")).strip()
+            conf = _clamp_confidence(obj.get("confidence", 50))
+            return intent, conf
+        except Exception:  # noqa: BLE001
+            pass
+
+    # Fallback to pipe-delimited
+    parts = [p.strip() for p in raw.split("|") if p.strip()]
+    intent = parts[0] if parts else "GENERAL"
+    confidence = _clamp_confidence(parts[1] if len(parts) > 1 else 50)
+    return intent, confidence
+
+
 # ─── Core Classifier ────────────────────────────────────────────────────────
 
-async def classify_intent(message: str) -> tuple[str, int]:
-    """Run Haiku to classify intent + confidence."""
+async def classify_intent(message: str, *, strict: bool = False) -> tuple[str, int]:
+    """
+    Run Haiku to classify intent + confidence.
+    If haiku_llm is unavailable:
+      - strict=False -> returns ("GENERAL", 50)
+      - strict=True  -> raises RuntimeError
+    """
+    if haiku_llm is None:
+        if strict:
+            raise RuntimeError(
+                "Intent classifier model is unavailable. Install langchain-anthropic "
+                "and configure ANTHROPIC_API_KEY."
+            )
+        return "GENERAL", 50
+
     prompt = INTENT_CLASSIFIER_PROMPT.format(message=message)
     result = await haiku_llm.ainvoke(prompt)
-    text = result.content.strip()
+    text = getattr(result, "content", "").strip()
 
-    parts = text.split("|")
-    intent = parts[0].strip()
-    try:
-        confidence = int(parts[1].strip()) if len(parts) > 1 else 50
-    except (ValueError, IndexError):
-        confidence = 50
+    intent, confidence = _parse_classifier_output(text)
 
+    # Validate intent
     if intent not in VALID_INTENTS:
-        intent = "GENERAL"
-        confidence = 50
+        return "GENERAL", 50
 
     return intent, confidence
 
@@ -56,9 +105,7 @@ async def intent_classifier_node(state: dict) -> dict:
         "ticket_category": intent,
         "intent_confidence": confidence,
         "current_agent": INTENT_TO_AGENT.get(intent, "supervisor"),
-        "agent_reasoning": [
-            f"INTENT CLASSIFIER: {intent} (confidence: {confidence}%)"
-        ],
+        "agent_reasoning": [f"INTENT CLASSIFIER: {intent} (confidence: {confidence}%)"],
     }
 
 
@@ -95,7 +142,7 @@ async def intent_shift_check_node(state: dict) -> dict:
 
 def route_by_confidence(state: dict) -> str:
     """Route based on confidence threshold after first-message classification."""
-    confidence = state.get("intent_confidence", 0)
+    confidence = int(state.get("intent_confidence", 0) or 0)
     intent = state.get("ticket_category", "GENERAL")
 
     if confidence >= CONFIDENCE_THRESHOLD:
