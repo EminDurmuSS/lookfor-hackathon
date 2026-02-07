@@ -176,7 +176,3 @@ async def shopify_create_return(orderId: str) -> dict:
     return await api_call_async("create_return", {"orderId": orderId})
 
 
-@tool
-async def shopify_create_draft_order() -> dict:
-    """Create a draft order."""
-    return await api_call_async("create_draft_order", {})

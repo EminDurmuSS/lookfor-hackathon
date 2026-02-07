@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
 ═══════════════════════════════════════════════════════════════════════════════
-NatPat Multi-Agent System — Comprehensive Scenario Test Runner  (v2.1)
+NatPat Multi-Agent System — Comprehensive Scenario Test Runner  (v2.2)
 ═══════════════════════════════════════════════════════════════════════════════
 
-Tests the live multi-agent system against the mock API using scenarios
-from the 95-scenario test suite.
+Tests the live multi-agent system against the REAL API using scenarios
+from the anonymized_ticket_test.json file.
 
 Produces a detailed .log file with:
   - Full conversation turns (input → output)
@@ -24,9 +24,8 @@ Additionally produces a FAIL-ONLY log file with:
   - Summary footer
 
 Usage:
-  # 1. Start mock API:   uvicorn mock_api_server:app --port 8080
-  # 2. Start main app:   uvicorn src.main:app --port 8000
-  # 3. Run tests:         python test_scenario_runner.py
+  # 1. Ensure Real API is running at APP_URL
+  # 2. Run tests:         python test_scenario_runner.py
 
   Options via environment variables:
     APP_URL        — Main app URL (default: http://localhost:8000)
@@ -57,7 +56,7 @@ import httpx
 
 APP_URL = os.getenv("APP_URL", "http://localhost:8000")
 MOCK_API_URL = os.getenv("MOCK_API_URL", "http://localhost:8080")
-RESET_BETWEEN = os.getenv("RESET_BETWEEN", "true").lower() == "true"
+RESET_BETWEEN = False # os.getenv("RESET_BETWEEN", "true").lower() == "true" # Disabled for real API
 SCENARIO_FILTER = os.getenv("SCENARIOS", "all")
 CATEGORY_FILTER = os.getenv("CATEGORIES", "all")
 VERBOSE = os.getenv("VERBOSE", "true").lower() == "true"
@@ -205,6 +204,7 @@ def clear_app_time_override() -> bool:
 
 
 def check_health(url: str) -> bool:
+    """Check if API is accessible."""
     try:
         r = client.get(f"{url}/health", timeout=5)
         return r.status_code == 200
@@ -260,7 +260,7 @@ def _no_forbidden(text: str) -> bool:
 # Scenario Loading from JSON
 # ═══════════════════════════════════════════════════════════════════════════════
 
-SCENARIOS_JSON_PATH = os.path.join(os.path.dirname(__file__), "test_scenarios.json")
+SCENARIOS_JSON_PATH = os.path.join(os.path.dirname(__file__), "anonymized_ticket_test.json")
 
 DEFAULT_CUSTOMER = {
     "email": "sarah@example.com",
@@ -424,7 +424,7 @@ def _check_tools_called(trace: dict, expected_tools: list[str]) -> bool:
 
 
 def load_scenarios_from_json() -> list[dict]:
-    """Load and parse scenarios from test_scenarios.json."""
+    """Load and parse scenarios from anonymized_ticket_test.json."""
     global SCENARIOS
 
     if not os.path.exists(SCENARIOS_JSON_PATH):
@@ -438,15 +438,16 @@ def load_scenarios_from_json() -> list[dict]:
     loaded = []
 
     for sc in raw_scenarios:
+        # Extract customer messages only
         messages = []
         for msg in sc.get("messages", []):
             if msg.get("role") == "customer":
                 messages.append(msg.get("content", ""))
 
-        expected = sc.get("expected", {})
-        checks = _build_checks_from_expected(expected)
-
         customer = sc.get("customer", DEFAULT_CUSTOMER)
+        
+        # Get the old agent response for comparison (from agent_response field)
+        old_agent_response = sc.get("agent_response", "")
 
         scenario_obj = {
             "id": sc.get("id", "UNKNOWN"),
@@ -454,10 +455,8 @@ def load_scenarios_from_json() -> list[dict]:
             "category": sc.get("category", "UNKNOWN"),
             "description": sc.get("description", ""),
             "messages": messages,
-            "checks": checks,
             "customer": customer,
-            "mock_tool_responses": sc.get("mock_tool_responses"),
-            "test_day": sc.get("test_day"),
+            "old_agent_response": old_agent_response,  # Old agent's response for comparison
         }
         loaded.append(scenario_obj)
 
@@ -682,26 +681,28 @@ def _wrap_text(text: str, width: int) -> list[str]:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def run_scenario(logger: DualLogger, sc: dict, index: int, total: int) -> dict:
-    """Run a single scenario and return result dict."""
+    """Run a single scenario and return result dict with old vs new agent comparison."""
     sid = sc["id"]
+    old_agent_response = sc.get("old_agent_response", "")
 
     logger.log()
     logger.section(f"SCENARIO {index}/{total}: {sid} — {sc['title']}", "═")
     logger.kv("Category", sc["category"])
     logger.kv("Customer", f"{sc['customer']['first_name']} {sc['customer']['last_name']} <{sc['customer']['email']}>")
     logger.kv("Turns", len(sc["messages"]))
-    logger.kv("Checks", len(sc["checks"]))
+    logger.kv("Has Old Response", "Yes" if old_agent_response else "No")
 
     result = {
         "id": sid, "title": sc["title"], "category": sc["category"],
-        "passed": True, "checks_passed": 0, "checks_total": len(sc["checks"]),
-        "failures": [], "error": None, "turns": [], "duration_s": 0,
+        "passed": True, "error": None, "turns": [], "duration_s": 0,
+        "old_agent_response": old_agent_response,
+        "new_agent_response": "",
     }
     start_time = time.time()
 
     try:
         # Configure test_day FIRST (this triggers a reset with recalculated dates)
-        if sc.get("test_day"):
+        if sc.get("test_day") and False: # Disabled for real API
             day_ok, payload = set_mock_time_for_day(sc["test_day"])
             logger.log(f"    [Mock time → {sc['test_day']}: {'OK' if day_ok else 'FAILED'}]")
             if day_ok and isinstance(payload, dict):
@@ -713,14 +714,14 @@ def run_scenario(logger: DualLogger, sc: dict, index: int, total: int) -> dict:
                     logger.log(
                         f"    [App time sync -> {mock_day} {date_str}: {'OK' if app_sync_ok else 'FAILED'}]"
                     )
-        elif RESET_BETWEEN:
+        elif RESET_BETWEEN and False: # Disabled for real API
             ok = reset_mock_api()
             logger.log(f"    [Mock API state reset: {'OK' if ok else 'FAILED'}]")
             app_clear_ok = clear_app_time_override()
             logger.log(f"    [App time clear: {'OK' if app_clear_ok else 'FAILED'}]")
 
         # Inject mock_tool_responses if specified
-        if sc.get("mock_tool_responses"):
+        if sc.get("mock_tool_responses") and False: # Disabled for real API
             mock_ok = configure_mock_responses(sc["mock_tool_responses"])
             logger.log(f"    [Mock overrides: {'OK' if mock_ok else 'FAILED'} — {list(sc['mock_tool_responses'].keys())}]")
 
@@ -803,23 +804,36 @@ def run_scenario(logger: DualLogger, sc: dict, index: int, total: int) -> dict:
             logger.log("      ⚠️  Trace endpoint returned no data.")
             logger.log("         (Check /session/{id}/trace endpoint)")
 
-        logger.subsection("ASSERTION CHECKS")
-        trace_obj = trace_data.get("trace", {}) if trace_data else {}
+        # Store new agent response
+        new_response = last_response.get("response", "") if last_response else ""
+        result["new_agent_response"] = new_response
 
-        for check_desc, check_fn in sc["checks"]:
-            try:
-                passed = check_fn(last_response, trace_obj)
-                if passed:
-                    logger.log(f"      ✅ PASS: {check_desc}")
-                    result["checks_passed"] += 1
+        # ── OLD vs NEW Agent Response Comparison ──────────────────────────
+        logger.subsection("OLD vs NEW AGENT RESPONSE COMPARISON")
+        
+        if old_agent_response:
+            logger.log("      📜 OLD AGENT RESPONSE:")
+            logger.log(f"      ┌{'─' * 66}┐")
+            for line in old_agent_response.split("\n"):
+                if len(line) <= 64:
+                    logger.log(f"      │ {line:64s} │")
                 else:
-                    logger.log(f"      ❌ FAIL: {check_desc}")
-                    result["failures"].append(check_desc)
-                    result["passed"] = False
-            except Exception as exc:
-                logger.log(f"      ❌ ERROR: {check_desc} — {exc}")
-                result["failures"].append(f"{check_desc} (error: {exc})")
-                result["passed"] = False
+                    logger.log(f"      │ {line}")
+            logger.log(f"      └{'─' * 66}┘")
+            logger.log()
+        else:
+            logger.log("      ⚠️ No old agent response available for this scenario")
+            logger.log()
+
+        logger.log("      🤖 NEW AGENT RESPONSE:")
+        logger.log(f"      ┌{'─' * 66}┐")
+        for line in new_response.split("\n") if new_response else ["(empty)"]:
+            if len(line) <= 64:
+                logger.log(f"      │ {line:64s} │")
+            else:
+                logger.log(f"      │ {line}")
+        logger.log(f"      └{'─' * 66}┘")
+        logger.log()
 
     except Exception as exc:
         result["passed"] = False
@@ -828,14 +842,11 @@ def run_scenario(logger: DualLogger, sc: dict, index: int, total: int) -> dict:
         logger.log(traceback.format_exc())
 
     finally:
-        # Always clear mock overrides to prevent cross-scenario contamination
-        clear_mock_overrides()
-        # Always clear app-side time override to avoid leakage.
-        clear_app_time_override()
+        pass  # No mock cleanup needed for real API
 
     result["duration_s"] = round(time.time() - start_time, 2)
-    status = "✅ PASSED" if result["passed"] else "❌ FAILED"
-    logger.log(f"\n    {status} — {result['checks_passed']}/{result['checks_total']} checks [{result['duration_s']}s]")
+    status = "✅ COMPLETED" if result["passed"] else "❌ ERROR"
+    logger.log(f"\n    {status} [{result['duration_s']}s]")
     logger.log()
     return result
 
@@ -851,41 +862,33 @@ def main():
     try:
         # Open fail-only log file
         fail_f = open(FAIL_LOG_FILE, "w", encoding="utf-8")
-        fail_f.write("NatPat Multi-Agent System — FAILED SCENARIOS ONLY\n")
+        fail_f.write("NatPat Multi-Agent System — FAILED SCENARIOS ONLY (Real API)\n")
         fail_f.write(f"Timestamp: {datetime.now().isoformat()}\n")
         fail_f.write(f"App URL: {APP_URL}\n")
-        fail_f.write(f"Mock API URL: {MOCK_API_URL}\n")
         fail_f.write(f"Main Log: {LOG_FILE}\n")
         fail_f.write("=" * 90 + "\n\n")
         fail_f.flush()
 
-        logger.section("NatPat Multi-Agent System — Scenario Test Report (v2.1)")
+        logger.section("NatPat Multi-Agent System — Scenario Test Report (v2.2 - Real API)")
         logger.log(f"  Timestamp:       {datetime.now().isoformat()}")
         logger.log(f"  App URL:         {APP_URL}")
-        logger.log(f"  Mock API URL:    {MOCK_API_URL}")
         logger.log(f"  Log File:        {LOG_FILE}")
         logger.log(f"  Fail Log File:   {FAIL_LOG_FILE}")
-        logger.log(f"  Reset Between:   {RESET_BETWEEN}")
-        logger.log(f"  Verbose:         {VERBOSE}")
         logger.log(f"  Total Scenarios: {len(SCENARIOS)}")
         logger.log()
 
         # ── Health checks ────────────────────────────────────────────────
         logger.subsection("HEALTH CHECKS")
         app_ok = check_health(APP_URL)
-        mock_ok = check_health(MOCK_API_URL)
         logger.log(f"    Main App ({APP_URL}):   {'🟢 OK' if app_ok else '🔴 DOWN'}")
-        logger.log(f"    Mock API ({MOCK_API_URL}): {'🟢 OK' if mock_ok else '🔴 DOWN'}")
+        logger.log(f"    Mock API:  DISABLED (using real API)")
 
-        if not app_ok or not mock_ok:
-            logger.log("\n    ❌ Cannot proceed — servers not running.")
-            logger.log("    Start with:")
-            logger.log("      uvicorn mock_api_server:app --port 8080")
-            logger.log("      uvicorn src.main:app --port 8000")
+        if not app_ok:
+            logger.log("\n    ❌ Cannot proceed — main app not running.")
+            logger.log(f"    Ensure API is available at: {APP_URL}")
 
-            fail_f.write("❌ Cannot proceed — servers not running.\n")
-            fail_f.write(f"Main App OK: {app_ok}\n")
-            fail_f.write(f"Mock API OK: {mock_ok}\n\n")
+            fail_f.write("❌ Cannot proceed — main app not running.\n")
+            fail_f.write(f"Main App OK: {app_ok}\n\n")
             fail_f.write("=" * 90 + "\n")
             fail_f.flush()
 
@@ -963,19 +966,16 @@ def main():
 
         logger.section("TEST SUMMARY", "═")
 
-        passed = sum(1 for r in results if r["passed"])
-        failed = sum(1 for r in results if not r["passed"])
+        completed = sum(1 for r in results if r["passed"])
         errored = sum(1 for r in results if r.get("error"))
-        total_checks = sum(r["checks_total"] for r in results)
-        passed_checks = sum(r["checks_passed"] for r in results)
+        with_old_response = sum(1 for r in results if r.get("old_agent_response"))
 
-        logger.log(f"  Scenarios:        {len(results)} total")
-        logger.log(f"  Passed:           {passed} ✅")
-        logger.log(f"  Failed:           {failed} ❌")
-        logger.log(f"  Errors:           {errored} 💥")
-        logger.log(f"  Checks:           {passed_checks}/{total_checks} ({round(passed_checks/max(total_checks,1)*100)}%)")
-        logger.log(f"  Total Duration:   {total_duration}s")
-        logger.log(f"  Avg per scenario: {round(total_duration/max(len(results),1),1)}s")
+        logger.log(f"  Scenarios:           {len(results)} total")
+        logger.log(f"  Completed:           {completed} ✅")
+        logger.log(f"  Errors:              {errored} 💥")
+        logger.log(f"  With Old Response:   {with_old_response} (for comparison)")
+        logger.log(f"  Total Duration:      {total_duration}s")
+        logger.log(f"  Avg per scenario:    {round(total_duration/max(len(results),1),1)}s")
         logger.log()
 
         # ── Category breakdown ───────────────────────────────────────────
@@ -991,7 +991,7 @@ def main():
             categories[cat]["total_time"] += r["duration_s"]
 
         logger.log("  By Category:")
-        logger.log(f"    {'Category':20s} {'Pass':>5s} {'Fail':>5s} {'Total':>6s} {'Time':>8s}")
+        logger.log(f"    {'Category':20s} {'Done':>5s} {'Err':>5s} {'Total':>6s} {'Time':>8s}")
         logger.log(f"    {'─'*20} {'─'*5} {'─'*5} {'─'*6} {'─'*8}")
         for cat in sorted(categories.keys()):
             c = categories[cat]
@@ -999,35 +999,31 @@ def main():
             logger.log(f"    {cat:20s} {c['passed']:5d} {c['failed']:5d} {total_cat:6d} {c['total_time']:7.1f}s")
         logger.log()
 
-        # ── Pass rate bar ────────────────────────────────────────────────
+
+        # ── Completion rate bar ──────────────────────────────────────────
         if results:
             bar_len = 40
-            fill = round(passed / len(results) * bar_len)
+            fill = round(completed / len(results) * bar_len)
             bar = "█" * fill + "░" * (bar_len - fill)
-            pct = round(passed / len(results) * 100)
-            logger.log(f"  Pass Rate: [{bar}] {pct}% ({passed}/{len(results)})")
+            pct = round(completed / len(results) * 100)
+            logger.log(f"  Completion Rate: [{bar}] {pct}% ({completed}/{len(results)})")
             logger.log()
 
-        # ── Failed scenarios ─────────────────────────────────────────────
-        if failed > 0:
-            logger.subsection("FAILED SCENARIOS")
+        # ── Error scenarios ──────────────────────────────────────────────
+        if errored > 0:
+            logger.subsection("ERROR SCENARIOS")
             for r in results:
-                if not r["passed"]:
-                    logger.log(f"    ❌ {r['id']}: {r['title']}")
-                    if r.get("error"):
-                        logger.log(f"       💥 Error: {r['error']}")
-                    for f in r.get("failures", []):
-                        logger.log(f"       • {f}")
-                    if r.get("turns"):
-                        last_resp = r["turns"][-1].get("response", "")[:150]
-                        logger.log(f"       Last response: \"{last_resp}…\"")
+                if r.get("error"):
+                    logger.log(f"    💥 {r['id']}: {r['title']}")
+                    logger.log(f"       Error: {r['error']}")
             logger.log()
 
         # ── Timing ───────────────────────────────────────────────────────
         logger.subsection("TIMING (slowest first)")
         for r in sorted(results, key=lambda x: -x["duration_s"]):
-            status = "✅" if r["passed"] else "❌"
-            logger.log(f"    {status} {r['id']:20s} {r['duration_s']:6.1f}s  ({r['checks_passed']}/{r['checks_total']})")
+            status = "✅" if r["passed"] else "💥"
+            has_old = "📜" if r.get("old_agent_response") else "  "
+            logger.log(f"    {status} {has_old} {r['id']:20s} {r['duration_s']:6.1f}s")
         logger.log()
 
         # ── Multi-turn analysis ──────────────────────────────────────────
@@ -1046,15 +1042,14 @@ def main():
                     )
             logger.log()
 
-        # ── Write fail log footer summary ────────────────────────────────
+        # ── Write log footer summary ─────────────────────────────────────
         fail_f.write("\n" + "=" * 90 + "\n")
-        fail_f.write("FAILURES SUMMARY\n")
+        fail_f.write("EXECUTION SUMMARY\n")
         fail_f.write(f"Total scenarios: {len(results)}\n")
-        fail_f.write(f"Passed: {passed}\n")
-        fail_f.write(f"Failed: {failed}\n")
+        fail_f.write(f"Completed: {completed}\n")
         fail_f.write(f"Errors: {errored}\n")
+        fail_f.write(f"With Old Response: {with_old_response}\n")
         fail_f.write(f"Main log: {LOG_FILE}\n")
-        fail_f.write(f"Fail log: {FAIL_LOG_FILE}\n")
         fail_f.write("=" * 90 + "\n")
         fail_f.flush()
 
@@ -1064,12 +1059,12 @@ def main():
         logger.close()
 
         print(f"\n{'═' * 70}")
-        print(f"  Results:  {passed}/{len(results)} scenarios passed ({round(passed/max(len(results),1)*100)}%)")
+        print(f"  Results:  {completed}/{len(results)} scenarios completed ({round(completed/max(len(results),1)*100)}%)")
+        print(f"  Errors:   {errored}")
         print(f"  Log:      {LOG_FILE}")
-        print(f"  Fail Log: {FAIL_LOG_FILE}")
         print(f"{'═' * 70}")
 
-        sys.exit(0 if failed == 0 else 1)
+        sys.exit(0 if errored == 0 else 1)
 
     finally:
         # Ensure files/client are closed even if sys.exit or exception occurs

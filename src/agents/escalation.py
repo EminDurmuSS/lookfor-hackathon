@@ -125,22 +125,7 @@ def _resolve_subscription_id(state: dict) -> Optional[str]:
     return None
 
 
-def _resolve_draft_order_id(state: dict) -> Optional[str]:
-    """Resolve created draft order id from tool call logs."""
-    for log in reversed(state.get("tool_calls_log") or []):
-        if log.get("tool_name") != "shopify_create_draft_order":
-            continue
-        result = log.get("result", {})
-        if not isinstance(result, dict) or not result.get("success"):
-            continue
-        data = result.get("data", {})
-        if not isinstance(data, dict):
-            continue
-        # API returns data.draftOrderId; keep data.id fallback for compatibility.
-        draft_id = data.get("draftOrderId") or data.get("id")
-        if isinstance(draft_id, str) and draft_id:
-            return draft_id
-    return None
+
 
 
 async def escalation_handler_node(state: dict) -> dict:
@@ -187,12 +172,6 @@ async def escalation_handler_node(state: dict) -> dict:
         conversation_history=msgs[-10:],
         created_at=datetime.now(timezone.utc).isoformat(),
     )
-
-    draft_id = _resolve_draft_order_id(state)
-    if draft_id:
-        payload.summary += (
-            f"\n\n**Draft Order Created:** {draft_id} - ready for review and completion."
-        )
 
     if category == "health_concern":
         customer_message = (

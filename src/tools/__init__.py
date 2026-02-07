@@ -28,12 +28,11 @@ from src.tools.shopify_tools import (
     shopify_create_discount_code,
     shopify_update_order_shipping_address,
     shopify_create_return,
-    shopify_create_draft_order,
 )
 
 # Skio subscription tools
 from src.tools.skio_tools import (
-    skio_get_subscription_status,
+    skio_get_subscriptions,
     skio_cancel_subscription,
     skio_pause_subscription,
     skio_skip_next_order_subscription,
@@ -65,9 +64,8 @@ __all__ = [
     "shopify_create_discount_code",
     "shopify_update_order_shipping_address",
     "shopify_create_return",
-    "shopify_create_draft_order",
     # Skio
-    "skio_get_subscription_status",
+    "skio_get_subscriptions",
     "skio_cancel_subscription",
     "skio_pause_subscription",
     "skio_skip_next_order_subscription",

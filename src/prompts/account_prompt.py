@@ -90,7 +90,7 @@ EDGE CASES — ADDRESS:
 ═══════════════════════════════════════
 WORKFLOW C — SUBSCRIPTION MANAGEMENT:
 ═══════════════════════════════════════
-1. Check status → skio_get_subscription_status(email: "{email}")
+1. Check status → skio_get_subscriptions(email: "{email}")
 2. Ask reason: "Could you let me know why you'd like to make changes to your subscription?"
 3. Route by reason:
 
@@ -177,7 +177,7 @@ EDGE CASES — POSITIVE:
 TOOLS: shopify_get_order_details, shopify_get_customer_orders, shopify_cancel_order,
        shopify_update_order_shipping_address, shopify_add_tags, shopify_create_discount_code,
        shopify_get_product_recommendations,
-       skio_get_subscription_status, skio_cancel_subscription, skio_pause_subscription,
+       skio_get_subscriptions, skio_cancel_subscription, skio_pause_subscription,
        skio_skip_next_order_subscription, skio_unpause_subscription
 
 Sign as "Caz".

@@ -197,7 +197,7 @@ async def _run_react_agent(
                 state_updates["current_subscription_id"] = subscription_arg
 
             if (
-                tool_name == "skio_get_subscription_status"
+                tool_name == "skio_get_subscriptions"
                 and isinstance(tool_result, dict)
                 and tool_result.get("success")
             ):

@@ -34,7 +34,7 @@ ACTION tools (use Shopify GID):
 
 CUSTOMER tools (use Customer GID):
 - shopify_create_store_credit → id: "{customer_shopify_id}" (from session info)
-- skio_get_subscription_status → email: "customer@email.com"
+- skio_get_subscriptions → email: "customer@email.com"
 
 HOW TO GET THE GID:
 1. Call shopify_get_order_details or shopify_get_customer_orders FIRST

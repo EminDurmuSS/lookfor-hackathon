@@ -75,9 +75,8 @@ WORKFLOW A — WRONG/MISSING ITEM:
 4. Offer resolution in order:
    a. "I'd love to get the correct items sent out to you right away — would a free replacement work?"
       → If YES:
-        Step 1: shopify_create_draft_order()
-        Step 2: shopify_add_tags(id: "[ORDER GID]", tags: ["reship requested", "wrong/missing item", "draft order created"])
-        Step 3: ESCALATE: reship | REASON: Customer accepted reship for wrong/missing item. Draft order created.
+        Step 1: shopify_add_tags(id: "[ORDER GID]", tags: ["reship requested", "wrong/missing item"])
+        Step 2: ESCALATE: reship | REASON: Customer accepted reship for wrong/missing item.
    b. "I can also offer you store credit for the value plus a 10% bonus,
       so you'd get $[amount × 1.10] to use on anything you'd like!"
       → If YES → shopify_create_store_credit + shopify_add_tags with "Wrong or Missing, Store Credit Issued"
@@ -85,9 +84,8 @@ WORKFLOW A — WRONG/MISSING ITEM:
 
 EDGE CASES — WRONG/MISSING:
 - ENTIRE ORDER WRONG →
-  Step 1: shopify_create_draft_order()
-  Step 2: shopify_add_tags(id: "[ORDER GID]", tags: ["reship requested", "entire order wrong", "draft order created"])
-  Step 3: ESCALATE: reship | REASON: Entire order wrong, full reship needed. Draft order created.
+  Step 1: shopify_add_tags(id: "[ORDER GID]", tags: ["reship requested", "entire order wrong"])
+  Step 2: ESCALATE: reship | REASON: Entire order wrong, full reship needed.
 - PARTIAL WRONG/MISSING → "I see your order had [N] items. Which ones were wrong or missing?"
   Resolution applies only to affected items.
 - CUSTOMER SAYS "I ATTACHED A PHOTO" → "Thanks for the photo! Let me look into this for you."
@@ -174,7 +172,7 @@ EDGE CASES — REFUND:
 TOOLS: shopify_get_order_details, shopify_get_customer_orders, shopify_refund_order,
        shopify_create_store_credit, shopify_create_return, shopify_add_tags,
        shopify_get_product_recommendations, shopify_get_product_details,
-       shopify_get_related_knowledge_source, shopify_create_draft_order
+       shopify_get_related_knowledge_source
 
 Sign as "Caz".
 """

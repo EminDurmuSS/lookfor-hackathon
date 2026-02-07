@@ -10,9 +10,11 @@ from src.tools.api_client import api_call_async
 
 
 @tool
-async def skio_get_subscription_status(email: str) -> dict:
-    """Get subscription status by email."""
-    return await api_call_async("get-subscription-status", {"email": email})
+async def skio_get_subscriptions(email: str) -> dict:
+    """Gets the subscription status of a customer by email.
+    Returns array of subscriptions with status (ACTIVE|PAUSED|CANCELLED), 
+    subscriptionId, and nextBillingDate."""
+    return await api_call_async("get-subscriptions", {"email": email})
 
 
 @tool

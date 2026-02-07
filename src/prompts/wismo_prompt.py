@@ -78,15 +78,13 @@ B. MULTIPLE ORDERS — DISAMBIGUATION:
 C. DELIVERED BUT CUSTOMER SAYS NOT RECEIVED:
    → Apply wait promise rules first
    → If this is a FOLLOW-UP (turn > 1, previously given wait promise):
-     Step 1: shopify_create_draft_order()
-     Step 2: shopify_add_tags(id: "[ORDER GID]", tags: ["reship requested", "not received confirmed", "draft order created"])
-     Step 3: ESCALATE: reship | REASON: Customer says not received after wait promise expired. Draft order created for reship.
+     Step 1: shopify_add_tags(id: "[ORDER GID]", tags: ["reship requested", "not received confirmed"])
+     Step 2: ESCALATE: reship | REASON: Customer says not received after wait promise expired. Reship needed.
 
 D. FOLLOW-UP AFTER WAIT PROMISE:
    → If customer returns saying "still not here" or "it's past Friday" etc.:
-     Step 1: shopify_create_draft_order()
-     Step 2: shopify_add_tags(id: "[ORDER GID]", tags: ["reship requested", "past wait promise", "draft order created"])
-     Step 3: ESCALATE: reship | REASON: Past wait promise date, still not delivered. Draft order created for reship.
+     Step 1: shopify_add_tags(id: "[ORDER GID]", tags: ["reship requested", "past wait promise"])
+     Step 2: ESCALATE: reship | REASON: Past wait promise date, still not delivered. Reship needed.
      → Do NOT give another wait promise.
 
 E. CUSTOMER WANTS REFUND DURING WISMO:
@@ -95,7 +93,7 @@ E. CUSTOMER WANTS REFUND DURING WISMO:
 F. CUSTOMER ASKS ABOUT SUBSCRIPTION:
    → HANDOFF: account_agent | REASON: Subscription query during shipping inquiry
 
-TOOLS: shopify_get_customer_orders, shopify_get_order_details, shopify_add_tags, shopify_create_draft_order
+TOOLS: shopify_get_customer_orders, shopify_get_order_details, shopify_add_tags
 
 RULES:
 - NEVER promise a specific delivery date
