@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import json
 import uuid
+import re
 from datetime import datetime, timezone
 from typing import Optional, List
 from contextlib import asynccontextmanager
@@ -30,6 +31,40 @@ from src import database  # <--- Persistence module
 
 # ── Global Graph (Initialized in lifespan) ──────────────────────────────────
 graph = None
+
+_WORKSPACE_LIMIT_RE = re.compile(
+    r"regain access on (?P<reset_at>\d{4}-\d{2}-\d{2} at \d{2}:\d{2} UTC)",
+    re.IGNORECASE,
+)
+
+
+def _iter_exception_chain(exc: Exception):
+    """Yield an exception and its cause/context chain."""
+    seen: set[int] = set()
+    current: Exception | None = exc
+    while current is not None and id(current) not in seen:
+        seen.add(id(current))
+        yield current
+        current = current.__cause__ or current.__context__
+
+
+def _extract_workspace_limit_reset_at(text: str) -> str | None:
+    match = _WORKSPACE_LIMIT_RE.search(text or "")
+    if not match:
+        return None
+    return match.group("reset_at")
+
+
+def _is_workspace_usage_limit_error(exc: Exception) -> tuple[bool, str | None]:
+    """
+    Detect Anthropic workspace-usage-limit failures.
+    Returns (is_limit_error, reset_at_utc).
+    """
+    for err in _iter_exception_chain(exc):
+        msg = str(err)
+        if "workspace API usage limits" in msg:
+            return True, _extract_workspace_limit_reset_at(msg)
+    return False, None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -192,6 +227,24 @@ async def send_message(req: MessageRequest):
     try:
         result = await graph.ainvoke(input_state, config=config)
     except Exception as e:
+        is_limit, reset_at = _is_workspace_usage_limit_error(e)
+        if is_limit:
+            reset_hint = f" after {reset_at}" if reset_at else " after the provider reset window"
+            return MessageResponse(
+                session_id=req.session_id,
+                response=(
+                    "Our AI provider workspace quota is currently exhausted. "
+                    f"Please try again{reset_hint}. "
+                    "If this is urgent, contact a human support agent."
+                ),
+                is_escalated=False,
+                actions_taken=["LLM_UNAVAILABLE_WORKSPACE_LIMIT"],
+                agent="system_unavailable",
+                intent="GENERAL",
+                intent_confidence=0,
+                was_revised=False,
+                intent_shifted=False,
+            )
         import traceback
         traceback.print_exc()
         raise HTTPException(500, f"Graph execution failed: {e}")
