@@ -6,6 +6,7 @@ import pytest
 from unittest.mock import MagicMock
 
 from src.patterns.handoff import handoff_router_node
+from src.agents.react_agents import _strip_internal_markers
 
 
 class TestHandoffRouter:
@@ -51,3 +52,23 @@ class TestEscalationDetection:
         result = output_guardrails_node(state)
         assert result.get("is_escalation") is True
         assert result["escalation_reason"] == "health_concern"
+
+
+class TestInternalMarkerStripping:
+    def test_handoff_line_preserved(self):
+        text = (
+            "Thought: I should route this\n"
+            "Action: handoff\n"
+            "HANDOFF: issue_agent | REASON: Refund requested"
+        )
+        cleaned = _strip_internal_markers(text)
+        assert cleaned == "HANDOFF: issue_agent | REASON: Refund requested"
+
+    def test_escalate_line_preserved(self):
+        text = (
+            "Observation: potential risk\n"
+            "ESCALATE: chargeback_risk | REASON: Customer threatened chargeback\n"
+            "Caz"
+        )
+        cleaned = _strip_internal_markers(text)
+        assert cleaned.startswith("ESCALATE: chargeback_risk")

@@ -161,6 +161,13 @@ class TestInputGuardrails:
         state = make_state("I'm going to do a chargeback on this")
         result = input_guardrails_node(state)
         assert result["flag_escalation_risk"] is True
+        assert result["flag_chargeback_threat"] is True
+
+    def test_non_chargeback_aggressive_keeps_chargeback_flag_false(self):
+        state = make_state("My lawyer will be contacting you")
+        result = input_guardrails_node(state)
+        assert result["flag_escalation_risk"] is True
+        assert result["flag_chargeback_threat"] is False
 
     def test_bbb_flagged(self):
         state = make_state("Filing a better business bureau complaint")
@@ -588,7 +595,7 @@ class TestToolCallGuardrails:
 
     # ── Store Credit 10% Bonus ─────────────────────────────────────────────
 
-    def test_store_credit_10_percent_bonus_applied(self):
+    def test_store_credit_amount_is_not_modified(self):
         allowed, reason, params = tool_call_guardrails(
             "shopify_create_store_credit",
             {
@@ -598,7 +605,7 @@ class TestToolCallGuardrails:
             {},
         )
         assert allowed is True
-        assert params["creditAmount"]["amount"] == "33.0"
+        assert params["creditAmount"]["amount"] == "30.00"
 
     def test_store_credit_customer_id_auto_populated(self):
         allowed, reason, params = tool_call_guardrails(

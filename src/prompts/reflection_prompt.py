@@ -14,10 +14,14 @@ CHECK THESE 8 RULES (fail if ANY is violated):
    Exception: Customer explicitly declined alternatives in previous turns → OK
 
 2. WAIT PROMISE: If this is a shipping delay, does the wait promise match today's day?
-   Today is {day_of_week}. Rules:
-   Mon/Tue/Wed → "wait until Friday" or "give it until this Friday"
-   Thu/Fri/Sat/Sun → "wait until early next week" or "give it until early next week"
-   If wrong timeframe → FAIL
+   Today is {day_of_week}. Rules vary by context:
+   WISMO (shipping status check):
+     Mon/Tue/Wed → "wait until Friday" or "give it until this Friday"
+     Thu/Fri/Sat/Sun → "wait until early next week" or "give it until early next week"
+   CANCELLATION or REFUND (shipping delay reason):
+     Mon/Tue → "wait until Friday" or "give it until this Friday"
+     Wed/Thu/Fri/Sat/Sun → "wait until early next week" or "give it until early next week"
+   If wrong timeframe for the context → FAIL
    If NOT a shipping delay response → SKIP this rule
 
 3. ESCALATION CHECK: Should this have been escalated but wasn't?

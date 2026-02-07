@@ -1,20 +1,28 @@
 """
-Cross-Agent Handoff Router.
+Cross-agent handoff router.
 Parses HANDOFF instructions from agents and re-routes to the target agent.
 Includes loop prevention (max 1 handoff per turn).
 """
 
 from __future__ import annotations
 
+from langchain_core.messages import RemoveMessage
+
 
 def handoff_router_node(state: dict) -> dict:
     """Parse HANDOFF instruction and prepare re-routing state."""
-    last_msg = state["messages"][-1].content.strip()
+    last_message = state["messages"][-1]
+    last_msg = (last_message.content or "").strip()
+    last_msg_id = getattr(last_message, "id", None)
     count = state.get("handoff_count_this_turn", 0)
 
+    remove_update = {}
+    if last_msg.startswith("HANDOFF:") and isinstance(last_msg_id, str) and last_msg_id:
+        remove_update = {"messages": [RemoveMessage(id=last_msg_id)]}
+
     if count >= 1:
-        # Loop prevention — fall back to supervisor
         return {
+            **remove_update,
             "handoff_target": "supervisor",
             "current_agent": "supervisor",
             "handoff_count_this_turn": count,
@@ -35,15 +43,15 @@ def handoff_router_node(state: dict) -> dict:
             target = "supervisor"
 
         return {
+            **remove_update,
             "handoff_target": target,
             "current_agent": target,
             "handoff_count_this_turn": count + 1,
             "agent_reasoning": [
-                f"HANDOFF: {state.get('current_agent', '?')} → {target} ({reason})"
+                f"HANDOFF: {state.get('current_agent', '?')} -> {target} ({reason})"
             ],
         }
 
-    # Not a valid handoff — fallback
     return {
         "handoff_target": "supervisor",
         "current_agent": "supervisor",

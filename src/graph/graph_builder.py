@@ -47,12 +47,36 @@ from src.patterns.reflection import reflection_validator_node, revise_response_n
 # ═════════════════════════════════════════════════════════════════════════════
 
 async def escalation_lock_node(state: dict) -> dict:
-    """Check if session is already escalated. If so, skip everything."""
+    """Check if session is already escalated. Reset per-turn flags."""
+    # Per-turn state reset
+    turn_reset = {
+        "was_revised": False,
+        "handoff_count_this_turn": 0,
+        "output_guardrail_passed": True,
+        "output_guardrail_issues": [],
+        "is_handoff": False,
+        "is_escalation": False,
+        "reflection_passed": True,
+        "reflection_feedback": None,
+        "reflection_rule_violated": None,
+        "reflection_suggested_fix": None,
+        "input_blocked": False,
+        "override_response": None,
+        "flag_escalation_risk": False,
+        "flag_chargeback_threat": False,
+        "flag_health_concern": False,
+        "handoff_target": None,
+        "intent_shifted": False,
+    }
+
     if state.get("is_escalated"):
         return {
+            **turn_reset,
+            "is_escalated": True,
             "agent_reasoning": ["ESCALATION LOCK: Session is locked"],
         }
     return {
+        **turn_reset,
         "agent_reasoning": ["ESCALATION LOCK: Session active"],
     }
 
@@ -74,10 +98,10 @@ def _route_after_input_guardrails(state: dict) -> str:
     # Health concern or chargeback → auto-escalate
     if state.get("flag_health_concern"):
         return "auto_escalate_health"
-    if state.get("flag_escalation_risk"):
+    if state.get("flag_chargeback_threat"):
         # We don't auto-escalate for aggressive language on first message;
         # we flag it and let the agent handle. But if combined with health → escalate.
-        pass
+        return "auto_escalate_chargeback"
 
     # First turn vs multi-turn
     human_count = sum(
@@ -99,6 +123,16 @@ async def auto_escalate_health_node(state: dict) -> dict:
         "escalation_reason": "health_concern",
         "agent_reasoning": [
             "AUTO-ESCALATE: Health/safety concern detected in input"
+        ],
+    }
+
+
+async def auto_escalate_chargeback_node(state: dict) -> dict:
+    """Immediately escalate chargeback threats."""
+    return {
+        "escalation_reason": "chargeback_risk",
+        "agent_reasoning": [
+            "AUTO-ESCALATE: Chargeback threat detected in input"
         ],
     }
 
@@ -148,10 +182,7 @@ def _route_after_revision(state: dict) -> str:
 
 async def output_guardrails_final_node(state: dict) -> dict:
     """Second pass of output guardrails after revision. Minimal — just safety."""
-    result = output_guardrails_node(state)
-    # Even if it fails again, we ship it (1-cycle max)
-    result["output_guardrail_passed"] = True
-    return result
+    return output_guardrails_node(state)
 
 
 # ═════════════════════════════════════════════════════════════════════════════
@@ -176,6 +207,7 @@ def build_graph() -> StateGraph:
     graph.add_node("escalation_lock", escalation_lock_node)
     graph.add_node("input_guardrails", input_guardrails_node)
     graph.add_node("auto_escalate_health", auto_escalate_health_node)
+    graph.add_node("auto_escalate_chargeback", auto_escalate_chargeback_node)
     graph.add_node("intent_classifier", intent_classifier_node)
     graph.add_node("intent_shift_check", intent_shift_check_node)
     graph.add_node("supervisor", supervisor_node)
@@ -209,6 +241,7 @@ def build_graph() -> StateGraph:
         {
             "__end__": END,
             "auto_escalate_health": "auto_escalate_health",
+            "auto_escalate_chargeback": "auto_escalate_chargeback",
             "intent_classifier": "intent_classifier",
             "intent_shift_check": "intent_shift_check",
         },
@@ -216,6 +249,7 @@ def build_graph() -> StateGraph:
 
     # Auto-escalate health → escalation handler
     graph.add_edge("auto_escalate_health", "escalation_handler")
+    graph.add_edge("auto_escalate_chargeback", "escalation_handler")
 
     # Intent Classifier → agent or supervisor
     graph.add_conditional_edges(

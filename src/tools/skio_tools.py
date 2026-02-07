@@ -6,22 +6,22 @@ from __future__ import annotations
 
 from langchain_core.tools import tool
 
-from src.tools.api_client import api_call
+from src.tools.api_client import api_call_async
 
 
 @tool
-def skio_get_subscription_status(email: str) -> dict:
+async def skio_get_subscription_status(email: str) -> dict:
     """Get subscription status by email."""
-    return api_call("get-subscription-status", {"email": email})
+    return await api_call_async("get-subscription-status", {"email": email})
 
 
 @tool
-def skio_cancel_subscription(
+async def skio_cancel_subscription(
     subscriptionId: str,
     cancellationReasons: list[str],
 ) -> dict:
     """Cancel subscription. Requires subscriptionId and reasons list."""
-    return api_call(
+    return await api_call_async(
         "cancel-subscription",
         {
             "subscriptionId": subscriptionId,
@@ -31,27 +31,27 @@ def skio_cancel_subscription(
 
 
 @tool
-def skio_pause_subscription(subscriptionId: str, pausedUntil: str) -> dict:
+async def skio_pause_subscription(subscriptionId: str, pausedUntil: str) -> dict:
     """Pause subscription until date. pausedUntil format: YYYY-MM-DD."""
-    return api_call(
+    return await api_call_async(
         "pause-subscription",
         {"subscriptionId": subscriptionId, "pausedUntil": pausedUntil},
     )
 
 
 @tool
-def skio_skip_next_order_subscription(subscriptionId: str) -> dict:
+async def skio_skip_next_order_subscription(subscriptionId: str) -> dict:
     """Skip next subscription order."""
-    return api_call(
+    return await api_call_async(
         "skip-next-order-subscription",
         {"subscriptionId": subscriptionId},
     )
 
 
 @tool
-def skio_unpause_subscription(subscriptionId: str) -> dict:
+async def skio_unpause_subscription(subscriptionId: str) -> dict:
     """Unpause a paused subscription."""
-    return api_call(
+    return await api_call_async(
         "unpause-subscription",
         {"subscriptionId": subscriptionId},
     )

@@ -47,9 +47,11 @@ class CustomerSupportState(TypedDict, total=False):
     output_guardrail_passed: bool
     output_guardrail_issues: list[str]
     discount_code_created: bool  # max 1 per session
+    discount_code_created_count: int  # counter for guardrail enforcement
     pending_refund_amount: Optional[float]
     order_total: Optional[float]
     flag_escalation_risk: bool  # aggressive language
+    flag_chargeback_threat: bool  # chargeback / dispute threat
     flag_health_concern: bool  # health / allergy mention
     is_handoff: bool  # agent requested cross-agent handoff
     handoff_target: Optional[str]
@@ -66,6 +68,8 @@ class CustomerSupportState(TypedDict, total=False):
     is_escalated: bool
     escalation_payload: Optional[dict]
     escalation_reason: Optional[str]
+    escalation_detail: Optional[str]
+    supervisor_route_decision: Optional[str]
 
     # ── Tracing / Observability ──────────────────────────────────────────────
     tool_calls_log: list[dict]

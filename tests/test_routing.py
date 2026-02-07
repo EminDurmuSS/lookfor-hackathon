@@ -12,6 +12,10 @@ from src.patterns.intent_classifier import (
     route_by_confidence,
     route_after_shift_check,
 )
+from src.graph.graph_builder import (
+    _route_after_input_guardrails,
+    output_guardrails_final_node,
+)
 
 
 class TestRouteByConfidence:
@@ -45,3 +49,34 @@ class TestRouteAfterShiftCheck:
     def test_default_supervisor(self):
         state = {}
         assert route_after_shift_check(state) == "supervisor"
+
+
+class _MockMessage:
+    def __init__(self, content: str, msg_type: str = "ai"):
+        self.content = content
+        self.type = msg_type
+
+
+class TestGraphRouting:
+    def test_chargeback_routes_to_auto_escalate(self):
+        state = {
+            "input_blocked": False,
+            "flag_health_concern": False,
+            "flag_chargeback_threat": True,
+            "messages": [_MockMessage("Chargeback incoming", "human")],
+        }
+        assert _route_after_input_guardrails(state) == "auto_escalate_chargeback"
+
+    def test_health_priority_over_chargeback(self):
+        state = {
+            "input_blocked": False,
+            "flag_health_concern": True,
+            "flag_chargeback_threat": True,
+            "messages": [_MockMessage("Health + chargeback", "human")],
+        }
+        assert _route_after_input_guardrails(state) == "auto_escalate_health"
+
+    def test_output_guardrails_final_does_not_force_pass(self):
+        state = {"messages": [_MockMessage("Your order is guaranteed by tomorrow!")]}
+        result = asyncio.run(output_guardrails_final_node(state))
+        assert result["output_guardrail_passed"] is False

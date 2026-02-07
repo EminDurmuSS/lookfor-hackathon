@@ -6,9 +6,10 @@ ReAct agent nodes for the multi-agent system.
 - account_agent_node: Cancellations, address, subscriptions, discounts
 - supervisor_node: Fallback router for low-confidence classification
 - supervisor_route: Routing function for supervisor decisions
-- handoff_router_node: Cross-agent handoff router
 - escalation_handler_node: Human escalation handler
 - post_escalation_node: Post-escalation session lock
+
+Note: handoff_router_node is in src.patterns.handoff
 """
 
 from src.agents.react_agents import (
@@ -19,7 +20,6 @@ from src.agents.react_agents import (
 from src.agents.supervisor import (
     supervisor_node,
     supervisor_route,
-    handoff_router_node,
 )
 from src.agents.escalation import (
     escalation_handler_node,
@@ -33,7 +33,6 @@ __all__ = [
     "account_agent_node",
     "supervisor_node",
     "supervisor_route",
-    "handoff_router_node",
     "escalation_handler_node",
     "post_escalation_node",
     "EscalationPayload",

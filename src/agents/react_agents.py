@@ -17,6 +17,32 @@ from src.prompts.wismo_prompt import build_wismo_prompt
 from src.tools.tool_groups import account_tools, issue_tools, wismo_tools
 
 
+def _strip_internal_markers(text: str) -> str:
+    """Remove ReAct reasoning traces while preserving control commands."""
+    import re
+    lines = (text or "").split("\n")
+
+    # Preserve cross-node control commands even if extra text surrounds them.
+    for line in lines:
+        stripped = line.strip()
+        lowered = stripped.lower()
+        if lowered.startswith("handoff:") or lowered.startswith("escalate:"):
+            return stripped
+
+    cleaned = []
+    for line in lines:
+        stripped = line.strip().lower()
+        if any(stripped.startswith(marker) for marker in [
+            "thought:", "action:", "observation:",
+        ]):
+            continue
+        cleaned.append(line)
+    result = "\n".join(cleaned).strip()
+    # Collapse multiple blank lines
+    result = re.sub(r'\n{3,}', '\n\n', result)
+    return result
+
+
 def _build_system_message(builder_fn, state: dict) -> str:
     """Build a system prompt string from state + current context."""
     ctx = get_current_context()
@@ -60,6 +86,31 @@ async def _run_react_agent(
     tool_calls_log = list(state.get("tool_calls_log") or [])
     actions_taken = list(state.get("actions_taken") or [])
     reasoning = []
+    running_state = dict(state or {})
+    running_state["tool_calls_log"] = tool_calls_log
+
+    state_updates = {
+        "current_order_id": state.get("current_order_id"),
+        "current_order_number": state.get("current_order_number"),
+        "current_subscription_id": state.get("current_subscription_id"),
+        "order_total": state.get("order_total"),
+        "discount_code_created": bool(state.get("discount_code_created", False)),
+        "discount_code_created_count": int(state.get("discount_code_created_count", 0) or 0),
+    }
+
+    def _build_output(content: str) -> dict:
+        output = {
+            "messages": [AIMessage(content=_strip_internal_markers(content))],
+            "tool_calls_log": tool_calls_log,
+            "actions_taken": actions_taken,
+            "agent_reasoning": reasoning,
+            "discount_code_created": bool(state_updates.get("discount_code_created", False)),
+            "discount_code_created_count": int(state_updates.get("discount_code_created_count", 0) or 0),
+        }
+        for key in ("current_order_id", "current_order_number", "current_subscription_id", "order_total"):
+            if state_updates.get(key) is not None:
+                output[key] = state_updates[key]
+        return output
 
     for iteration in range(max_iterations):
         response = await llm_with_tools.ainvoke(conversation)
@@ -70,12 +121,7 @@ async def _run_react_agent(
             reasoning.append(
                 f"ReAct iteration {iteration + 1}: Final response generated"
             )
-            return {
-                "messages": [AIMessage(content=response.content)],
-                "tool_calls_log": tool_calls_log,
-                "actions_taken": actions_taken,
-                "agent_reasoning": reasoning,
-            }
+            return _build_output(response.content)
 
         # Process tool calls
         for tc in response.tool_calls:
@@ -87,7 +133,7 @@ async def _run_react_agent(
 
             # ── Tool Call Guardrails: validate & correct before execution ──
             is_allowed, reason, corrected_args = tool_call_guardrails(
-                tool_name, tool_args, state
+                tool_name, tool_args, running_state
             )
 
             if not is_allowed:
@@ -110,6 +156,63 @@ async def _run_react_agent(
                 "result": tool_result if isinstance(tool_result, dict) else str(tool_result),
             }
             tool_calls_log.append(log_entry)
+            running_state["tool_calls_log"] = tool_calls_log
+
+            # Keep key IDs live for downstream escalation payloads.
+            order_id_arg = corrected_args.get("orderId") if isinstance(corrected_args, dict) else None
+            if isinstance(order_id_arg, str):
+                if order_id_arg.startswith("gid://shopify/Order/"):
+                    state_updates["current_order_id"] = order_id_arg
+                elif order_id_arg.startswith("#"):
+                    state_updates["current_order_number"] = order_id_arg
+
+            if (
+                tool_name == "shopify_get_order_details"
+                and isinstance(tool_result, dict)
+                and tool_result.get("success")
+            ):
+                data = tool_result.get("data", {})
+                if isinstance(data, dict):
+                    order_gid = data.get("id")
+                    order_name = data.get("name")
+                    if isinstance(order_gid, str) and order_gid.startswith("gid://shopify/Order/"):
+                        state_updates["current_order_id"] = order_gid
+                    if isinstance(order_name, str) and order_name.startswith("#"):
+                        state_updates["current_order_number"] = order_name
+                    total_price = data.get("totalPrice")
+                    if total_price is not None:
+                        try:
+                            state_updates["order_total"] = float(total_price)
+                        except (TypeError, ValueError):
+                            pass
+
+            subscription_arg = corrected_args.get("subscriptionId") if isinstance(corrected_args, dict) else None
+            if isinstance(subscription_arg, str) and subscription_arg:
+                state_updates["current_subscription_id"] = subscription_arg
+
+            if (
+                tool_name == "skio_get_subscription_status"
+                and isinstance(tool_result, dict)
+                and tool_result.get("success")
+            ):
+                data = tool_result.get("data", {})
+                if isinstance(data, dict):
+                    subscription_id = data.get("subscriptionId")
+                    if isinstance(subscription_id, str) and subscription_id:
+                        state_updates["current_subscription_id"] = subscription_id
+
+            if (
+                tool_name == "shopify_create_discount_code"
+                and isinstance(tool_result, dict)
+                and tool_result.get("success")
+            ):
+                state_updates["discount_code_created"] = True
+                state_updates["discount_code_created_count"] = int(
+                    state_updates.get("discount_code_created_count", 0) or 0
+                ) + 1
+
+            running_state["discount_code_created"] = state_updates["discount_code_created"]
+            running_state["discount_code_created_count"] = state_updates["discount_code_created_count"]
 
             # Track actions
             destructive = {"shopify_cancel_order", "shopify_refund_order",
@@ -135,12 +238,7 @@ async def _run_react_agent(
             break
 
     content = last_ai.content if last_ai else "I apologize, but I need a moment. Let me look into this further.\n\nCaz"
-    return {
-        "messages": [AIMessage(content=content)],
-        "tool_calls_log": tool_calls_log,
-        "actions_taken": actions_taken,
-        "agent_reasoning": reasoning,
-    }
+    return _build_output(content)
 
 
 # ─── Public Agent Node Functions ─────────────────────────────────────────────
@@ -166,12 +264,5 @@ async def account_agent_node(state: dict) -> dict:
     prompt = _build_system_message(build_account_prompt, state)
     result = await _run_react_agent(sonnet_llm, account_tools, prompt, state)
     result["current_agent"] = "account_agent"
-
-    # Track discount code creation
-    for log in (result.get("tool_calls_log") or []):
-        if log.get("tool_name") == "shopify_create_discount_code":
-            r = log.get("result", {})
-            if isinstance(r, dict) and r.get("success"):
-                result["discount_code_created"] = True
 
     return result

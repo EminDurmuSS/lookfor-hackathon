@@ -102,9 +102,37 @@ INTENT_TO_AGENT: dict[str, str] = {
 }
 
 
-# ── Time Helpers ─────────────────────────────────────────────────────────────
+# ── Time Helpers ─────────────────────────────────────────────────────────
+# Override values for testing (set via set_time_override)
+_override_date: str | None = None
+_override_day: str | None = None
+_override_wait_promise: str | None = None
+
+
+def set_time_override(date: str, day_of_week: str, wait_promise: str) -> None:
+    """Set time override for testing. Called by mock API or test harness."""
+    global _override_date, _override_day, _override_wait_promise
+    _override_date = date
+    _override_day = day_of_week
+    _override_wait_promise = wait_promise
+
+
+def clear_time_override() -> None:
+    """Clear time override, reverting to real server time."""
+    global _override_date, _override_day, _override_wait_promise
+    _override_date = _override_day = _override_wait_promise = None
+
+
 def get_current_context() -> dict[str, str]:
     """Return current date, day-of-week and wait-promise string."""
+    # Check for test override first
+    if _override_date and _override_day and _override_wait_promise:
+        return {
+            "current_date": _override_date,
+            "day_of_week": _override_day,
+            "wait_promise": _override_wait_promise,
+        }
+
     tz = ZoneInfo(APP_TIMEZONE)
     now = datetime.now(tz)
     day = now.weekday()  # 0=Mon … 6=Sun

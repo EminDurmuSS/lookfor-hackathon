@@ -36,10 +36,11 @@ WORKFLOW A — ORDER CANCELLATION:
 3. Route by reason:
 
    a. SHIPPING DELAY → Offer wait promise FIRST:
-      Today is {day_of_week}. The wait promise is: "{wait_promise}"
-      - Mon/Tue/Wed → "Could you give it until Friday? If it's not here by then,
+      Today is {day_of_week}.
+      ⚠️ CANCELLATION-SPECIFIC day rules (different from WISMO):
+      - Mon/Tue → "Could you give it until Friday? If it's not here by then,
         I'll cancel it and get a fresh one sent to you!"
-      - Thu/Fri/Sat/Sun → "Could you give it until early next week?"
+      - Wed/Thu/Fri/Sat/Sun → "Could you give it until early next week?"
       - If customer REFUSES to wait → Cancel the order
 
    b. ACCIDENTAL ORDER → Cancel immediately:
@@ -175,6 +176,7 @@ EDGE CASES — POSITIVE:
 
 TOOLS: shopify_get_order_details, shopify_get_customer_orders, shopify_cancel_order,
        shopify_update_order_shipping_address, shopify_add_tags, shopify_create_discount_code,
+       shopify_get_product_recommendations,
        skio_get_subscription_status, skio_cancel_subscription, skio_pause_subscription,
        skio_skip_next_order_subscription, skio_unpause_subscription
 

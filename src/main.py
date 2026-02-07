@@ -25,6 +25,7 @@ from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 
 from src.graph.graph_builder import compile_graph
 from src.tracing.models import build_session_trace
+from src.config import set_time_override, clear_time_override
 from src import database  # <--- Persistence module
 
 # ── Global Graph (Initialized in lifespan) ──────────────────────────────────
@@ -249,3 +250,25 @@ async def list_past_sessions(email: Optional[str] = None):
             preview=r["preview"]
         ) for r in rows
     ]
+
+
+# ── Debug Endpoints (for testing) ─────────────────────────────────────────────
+
+class TimeOverrideRequest(BaseModel):
+    date: str          # "2026-02-09"
+    day_of_week: str   # "Monday"
+    wait_promise: str  # "this Friday"
+
+
+@app.post("/debug/set-time")
+async def debug_set_time(req: TimeOverrideRequest):
+    """Set time override for testing wait promise logic."""
+    set_time_override(req.date, req.day_of_week, req.wait_promise)
+    return {"status": "ok", "message": f"Time set to {req.day_of_week}, wait_promise={req.wait_promise}"}
+
+
+@app.post("/debug/clear-time")
+async def debug_clear_time():
+    """Clear time override, revert to real server time."""
+    clear_time_override()
+    return {"status": "ok", "message": "Time override cleared"}
