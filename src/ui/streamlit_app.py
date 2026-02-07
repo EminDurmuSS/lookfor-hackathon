@@ -7,6 +7,7 @@ Features:
 """
 
 import json
+import re
 import time
 from datetime import datetime
 import httpx
@@ -732,12 +733,15 @@ with col_trace:
                     # Build detail HTML
                     detail_html = ""
                     if detail:
-                        # If detail contains HTML (e.g. tool call HTML), render it directly
-                        if detail.strip().startswith("<div") or "<span" in detail:
-                            detail_html = f'<div style="margin-top: 6px;">{detail}</div>'
-                        else:
-                            safe_detail = detail[:500].replace("<", "&lt;").replace(">", "&gt;")
-                            detail_html = f'<div style="color: #4B5563; font-size: 13px; margin-top: 6px; padding: 8px; background: #F9FAFB; border-radius: 6px;">{safe_detail}{"..." if len(detail) > 500 else ""}</div>'
+                        # Strip any raw HTML from detail - always display as clean text
+                        # Remove HTML tags to get clean text
+                        clean_detail = re.sub(r'<[^>]+>', '', str(detail))
+                        clean_detail = clean_detail.replace('&lt;', '<').replace('&gt;', '>').replace('&amp;', '&')
+                        clean_detail = clean_detail.strip()
+                        
+                        if clean_detail:
+                            safe_detail = clean_detail[:500]
+                            detail_html = f'<div style="color: #4B5563; font-size: 13px; margin-top: 6px; padding: 8px; background: #F9FAFB; border-radius: 6px;">{safe_detail}{"..." if len(clean_detail) > 500 else ""}</div>'
                     
                     # Build tool call HTML
                     tool_html = ""
