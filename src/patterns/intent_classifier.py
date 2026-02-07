@@ -15,6 +15,7 @@ Updates:
 from __future__ import annotations
 
 import json
+import re
 from typing import Any, Tuple
 
 from src.config import (
@@ -62,6 +63,40 @@ def _parse_classifier_output(text: str) -> Tuple[str, int]:
     intent = parts[0] if parts else "GENERAL"
     confidence = _clamp_confidence(parts[1] if len(parts) > 1 else 50)
     return intent, confidence
+
+
+_ACK_RE = re.compile(r"[^a-z0-9\s]")
+_SHORT_ACKS: set[str] = {
+    "yes",
+    "yep",
+    "yeah",
+    "sure",
+    "ok",
+    "okay",
+    "sounds good",
+    "that works",
+    "works",
+    "please do",
+    "go ahead",
+    "do it",
+    "thanks",
+    "thank you",
+    "got it",
+    "alright",
+}
+
+
+def _is_short_acknowledgement(message: str) -> bool:
+    """Detect brief confirmation messages that should keep current agent."""
+    cleaned = _ACK_RE.sub(" ", (message or "").lower())
+    cleaned = " ".join(cleaned.split())
+    if not cleaned:
+        return False
+    if cleaned in _SHORT_ACKS:
+        return True
+    if len(cleaned.split()) <= 3 and any(token in cleaned for token in ("yes", "sure", "ok", "okay")):
+        return True
+    return False
 
 
 # ─── Core Classifier ────────────────────────────────────────────────────────
@@ -114,8 +149,25 @@ async def intent_shift_check_node(state: dict) -> dict:
     new_message = state["messages"][-1].content
     current_agent = state.get("current_agent", "supervisor")
 
+    if _is_short_acknowledgement(new_message):
+        return {
+            "intent_shifted": False,
+            "agent_reasoning": [
+                f"MULTI-TURN: Short acknowledgement detected, continuing with {current_agent}"
+            ],
+        }
+
     new_intent, confidence = await classify_intent(new_message)
     expected_agent = INTENT_TO_AGENT.get(new_intent, "supervisor")
+
+    if new_intent == "GENERAL" and current_agent != "supervisor":
+        return {
+            "intent_shifted": False,
+            "agent_reasoning": [
+                f"MULTI-TURN: Ignoring GENERAL drift, continuing with {current_agent} "
+                f"(checked: {new_intent} @ {confidence}%)"
+            ],
+        }
 
     if expected_agent != current_agent and confidence >= INTENT_SHIFT_THRESHOLD:
         return {

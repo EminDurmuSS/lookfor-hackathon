@@ -94,6 +94,46 @@ _HEALTH_PATTERNS: list[str] = [
     "pediatrician",
 ]
 
+_ENTIRE_ORDER_WRONG_PATTERNS: list[str] = [
+    "entire order wrong",
+    "everything in my order",
+    "all items are wrong",
+    "none of these are what i ordered",
+    "completely wrong",
+]
+
+_RESHIP_OFFER_PATTERNS: list[str] = [
+    "free replacement",
+    "replacement work",
+    "replacement",
+    "reship",
+    "correct items sent",
+    "send out the correct items",
+]
+
+_RESHIP_ACCEPT_PATTERNS: list[str] = [
+    "yes",
+    "yep",
+    "yeah",
+    "sure",
+    "please do",
+    "go ahead",
+    "send me the right",
+    "send me the correct",
+    "replacement works",
+    "replacement work",
+    "free replacement works",
+]
+
+_RESHIP_DECLINE_PATTERNS: list[str] = [
+    "don't",
+    "do not",
+    "dont",
+    "no ",
+    "no,",
+    "not ",
+]
+
 # Common PII patterns (best-effort)
 _EMAIL_RE = re.compile(r"\b[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}\b")
 _PHONE_RE = re.compile(r"\b(?:\+?\d{1,3}[\s-]?)?(?:\(?\d{2,4}\)?[\s-]?)?\d{3}[\s-]?\d{2}[\s-]?\d{2}\b")
@@ -146,6 +186,38 @@ def _redact_pii(text: str) -> tuple[str, bool]:
     return cleaned2, (cleaned2 != cleaned)
 
 
+def _last_ai_message_text(state: dict) -> str:
+    """Return most recent AI message text in conversation, if available."""
+    for msg in reversed(state.get("messages", [])[:-1]):
+        if hasattr(msg, "type") and msg.type == "ai":
+            return _normalize_text(getattr(msg, "content", ""))
+    return ""
+
+
+def _detect_reship_signals(state: dict, norm_message: str) -> tuple[bool, bool]:
+    """
+    Return (entire_order_wrong, reship_acceptance).
+    Uses current customer text + most recent agent message as context.
+    """
+    entire_order_wrong = any(p in norm_message for p in _ENTIRE_ORDER_WRONG_PATTERNS)
+
+    prior_ai = _last_ai_message_text(state)
+    offered_reship = any(p in prior_ai for p in _RESHIP_OFFER_PATTERNS)
+    accepted_reship = any(p in norm_message for p in _RESHIP_ACCEPT_PATTERNS)
+    declined_reship = any(p in norm_message for p in _RESHIP_DECLINE_PATTERNS)
+
+    reship_acceptance = bool(offered_reship and accepted_reship and not declined_reship)
+    return entire_order_wrong, reship_acceptance
+
+
+def _is_reship_escalation_allowed(state: dict) -> bool:
+    """Only allow reship escalation when deterministic preconditions are met."""
+    return any([
+        bool(state.get("flag_entire_order_wrong")),
+        bool(state.get("flag_reship_acceptance")),
+    ])
+
+
 def input_guardrails_node(state: dict) -> dict:
     """
     Validate & sanitise customer message before routing.
@@ -165,6 +237,8 @@ def input_guardrails_node(state: dict) -> dict:
             "input_blocked": True,
             "override_response": reply,
             "messages": [_build_ai_message(reply)],
+            "flag_entire_order_wrong": False,
+            "flag_reship_acceptance": False,
             "agent_reasoning": ["INPUT GUARDRAIL: Empty or gibberish message"],
         }
 
@@ -178,6 +252,8 @@ def input_guardrails_node(state: dict) -> dict:
             "input_blocked": True,
             "override_response": reply,
             "messages": [_build_ai_message(reply)],
+            "flag_entire_order_wrong": False,
+            "flag_reship_acceptance": False,
             "agent_reasoning": ["INPUT GUARDRAIL: Potential prompt injection detected"],
         }
 
@@ -202,6 +278,8 @@ def input_guardrails_node(state: dict) -> dict:
     # ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ 6) Health / safety flag ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
     health = any(p in norm for p in _HEALTH_PATTERNS)
 
+    flag_entire_order_wrong, flag_reship_acceptance = _detect_reship_signals(state, norm)
+
     reasons: list[str] = []
     if pii_detected:
         reasons.append("PII redacted")
@@ -211,6 +289,10 @@ def input_guardrails_node(state: dict) -> dict:
         reasons.append("Chargeback threat detected")
     if health:
         reasons.append("Health concern detected")
+    if flag_entire_order_wrong:
+        reasons.append("Entire-order-wrong signal detected")
+    if flag_reship_acceptance:
+        reasons.append("Reship acceptance detected")
 
     return {
         "input_blocked": False,
@@ -218,6 +300,8 @@ def input_guardrails_node(state: dict) -> dict:
         "flag_escalation_risk": aggressive,
         "flag_chargeback_threat": chargeback,
         "flag_health_concern": health,
+        "flag_entire_order_wrong": flag_entire_order_wrong,
+        "flag_reship_acceptance": flag_reship_acceptance,
         "agent_reasoning": [f"INPUT GUARDRAIL: {', '.join(reasons) if reasons else 'Clean input'}"],
     }
 
@@ -232,6 +316,7 @@ _FORBIDDEN_PHRASES: list[tuple[str, str]] = [
     ("100% money back", "Cannot promise unconditional refunds"),
     ("i promise", "Avoid absolute promises"),
     ("we guarantee", "Avoid guarantees"),
+    ("definitely", "Avoid absolute certainty language"),
     ("definitely by tomorrow", "Cannot promise specific dates"),
     ("full refund no questions", "Must follow resolution waterfall"),
     ("guaranteed by", "Cannot guarantee timeframes"),
@@ -282,6 +367,21 @@ def output_guardrails_node(state: dict) -> dict:
         parts = stripped.split("|")
         cat = parts[0].replace("ESCALATE:", "").strip().lower()
         reason = parts[1].replace("REASON:", "").strip() if len(parts) > 1 else ""
+        if cat == "reship" and not _is_reship_escalation_allowed(state):
+            issue = (
+                "ESCALATION POLICY: Reship escalation blocked (requires entire-order-wrong "
+                "or explicit replacement acceptance signal)"
+            )
+            return {
+                "output_guardrail_passed": False,
+                "output_guardrail_issues": [issue],
+                "reflection_rule_violated": "OUTPUT_GUARDRAILS",
+                "reflection_feedback": issue,
+                "reflection_suggested_fix": (
+                    "Do not escalate to reship for refund pivots; continue with refund/store-credit workflow."
+                ),
+                "agent_reasoning": [f"OUTPUT GUARDRAIL: FAILED - {issue}"],
+            }
         return {
             "output_guardrail_passed": True,
             "is_escalation": True,
@@ -448,7 +548,22 @@ def tool_call_guardrails(
         cp.setdefault("limit", 10)
 
     # ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ 8) Duplicate call prevention (last 3) ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
-    recent = (state.get("tool_calls_log") or [])[-3:]
+    all_calls = state.get("tool_calls_log") or []
+    current_turn_index = state.get("current_turn_index")
+    has_turn_indexed_calls = any(
+        isinstance(call, dict) and call.get("turn_index") is not None
+        for call in all_calls
+    )
+
+    # Prefer turn-scoped duplicate detection when turn metadata is available.
+    if current_turn_index is not None and has_turn_indexed_calls:
+        recent = [
+            call for call in all_calls
+            if isinstance(call, dict) and call.get("turn_index") == current_turn_index
+        ][-3:]
+    else:
+        recent = all_calls[-3:]
+
     for call in recent:
         if call.get("tool_name") == tool_name and call.get("params") == cp:
             return False, f"Duplicate tool call detected: {tool_name}", cp

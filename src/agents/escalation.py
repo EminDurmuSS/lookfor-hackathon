@@ -6,7 +6,7 @@ Generates structured summary, customer message, and locks the session.
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 from langchain_core.messages import AIMessage
@@ -30,6 +30,43 @@ class EscalationPayload(BaseModel):
 
 
 _HIGH_PRIORITY = {"health_concern", "chargeback_risk", "billing_error", "technical_error"}
+
+
+def _resolve_intent_context(state: dict, escalation_reason: str) -> tuple[str, int, str]:
+    """
+    Ensure escalation responses always carry intent/agent metadata.
+    Falls back deterministically from escalation reason when missing.
+    """
+    ticket_category = state.get("ticket_category")
+    current_agent = state.get("current_agent")
+    intent_confidence = state.get("intent_confidence")
+
+    if not ticket_category:
+        if escalation_reason == "health_concern":
+            ticket_category = "NO_EFFECT"
+        elif escalation_reason == "reship":
+            ticket_category = "WRONG_MISSING"
+        elif escalation_reason == "chargeback_risk":
+            ticket_category = "REFUND"
+        else:
+            ticket_category = "GENERAL"
+
+    if not current_agent:
+        if ticket_category in {"WISMO"}:
+            current_agent = "wismo_agent"
+        elif ticket_category in {"WRONG_MISSING", "NO_EFFECT", "REFUND"}:
+            current_agent = "issue_agent"
+        elif ticket_category in {"ORDER_MODIFY", "SUBSCRIPTION", "DISCOUNT", "POSITIVE"}:
+            current_agent = "account_agent"
+        else:
+            current_agent = "supervisor"
+
+    try:
+        parsed_conf = int(intent_confidence)
+    except (TypeError, ValueError):
+        parsed_conf = 100
+
+    return ticket_category, parsed_conf, current_agent
 
 
 def _resolve_order_id(state: dict) -> Optional[str]:
@@ -134,6 +171,7 @@ async def escalation_handler_node(state: dict) -> dict:
     category = state.get("escalation_reason", "uncertain")
     priority = "high" if category in _HIGH_PRIORITY else "normal"
     first_name = state.get("customer_first_name", "there")
+    ticket_category, intent_confidence, current_agent = _resolve_intent_context(state, category)
     resolved_order_id = _resolve_order_id(state)
     resolved_subscription_id = _resolve_subscription_id(state)
 
@@ -147,7 +185,7 @@ async def escalation_handler_node(state: dict) -> dict:
         summary=summary_result.content,
         actions_taken=state.get("actions_taken", []),
         conversation_history=msgs[-10:],
-        created_at=datetime.utcnow().isoformat(),
+        created_at=datetime.now(timezone.utc).isoformat(),
     )
 
     draft_id = _resolve_draft_order_id(state)
@@ -156,15 +194,26 @@ async def escalation_handler_node(state: dict) -> dict:
             f"\n\n**Draft Order Created:** {draft_id} - ready for review and completion."
         )
 
-    customer_message = (
-        f"Hey {first_name}, to make sure you get the best help, "
-        f"I'm looping in Monica, who is our Head of CS. "
-        f"She'll take the conversation from here.\n\nCaz"
-    )
+    if category == "health_concern":
+        customer_message = (
+            f"Hey {first_name}, I'm really sorry this happened. Please stop using the product "
+            f"right away and follow your healthcare provider's advice. "
+            f"Because this is a health concern, I'm looping in Monica, our Head of CS, now "
+            f"so she can take this forward urgently.\n\nCaz"
+        )
+    else:
+        customer_message = (
+            f"Hey {first_name}, to make sure you get the best help, "
+            f"I'm looping in Monica, who is our Head of CS. "
+            f"She'll take the conversation from here.\n\nCaz"
+        )
 
     response = {
         "messages": [AIMessage(content=customer_message)],
         "is_escalated": True,
+        "ticket_category": ticket_category,
+        "intent_confidence": intent_confidence,
+        "current_agent": current_agent,
         "escalation_payload": payload.model_dump(),
         "agent_reasoning": [
             f"ESCALATED [{priority.upper()}]: {category} - "

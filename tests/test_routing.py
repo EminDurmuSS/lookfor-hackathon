@@ -76,6 +76,26 @@ class TestGraphRouting:
         }
         assert _route_after_input_guardrails(state) == "auto_escalate_health"
 
+    def test_entire_order_wrong_routes_to_auto_escalate_reship(self):
+        state = {
+            "input_blocked": False,
+            "flag_health_concern": False,
+            "flag_chargeback_threat": False,
+            "flag_entire_order_wrong": True,
+            "messages": [_MockMessage("Everything wrong", "human")],
+        }
+        assert _route_after_input_guardrails(state) == "auto_escalate_reship"
+
+    def test_reship_acceptance_routes_to_auto_escalate_reship(self):
+        state = {
+            "input_blocked": False,
+            "flag_health_concern": False,
+            "flag_chargeback_threat": False,
+            "flag_reship_acceptance": True,
+            "messages": [_MockMessage("Yes replacement works", "human")],
+        }
+        assert _route_after_input_guardrails(state) == "auto_escalate_reship"
+
     def test_output_guardrails_final_does_not_force_pass(self):
         state = {"messages": [_MockMessage("Your order is guaranteed by tomorrow!")]}
         result = asyncio.run(output_guardrails_final_node(state))

@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import json
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional, List
 from contextlib import asynccontextmanager
 
@@ -126,7 +126,7 @@ async def health():
 async def start_session(req: SessionStartRequest):
     """Start a new customer support email session."""
     session_id = f"session_{uuid.uuid4().hex[:12]}"
-    created_at = datetime.utcnow().isoformat()
+    created_at = datetime.now(timezone.utc).isoformat()
 
     # 1. Store in memory (for fast active lookup)
     sessions[session_id] = {

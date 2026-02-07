@@ -1,22 +1,5 @@
 """
-Complete LangGraph graph (v3.0) — 7-layer pipeline.
-
-Layer 0: Escalation Lock
-Layer 1: Input Guardrails
-Layer 2: Intent Classification (+ multi-turn shift detection)
-Layer 3: ReAct Agents
-Layer 4: Tool Guardrails (inside agents)
-Layer 5: Output Guardrails (+ handoff / escalation intercept)
-Layer 6: Reflection Validator
-Layer 7: Revision (if needed)
-
-Bug fixes applied from code review:
-  - Output guardrails fail → populates reflection fields for revise node
-  - Revision → output_guardrails → reflection (1-cycle max, tracked by was_revised)
-  - Escalation detectable from any agent via ESCALATE: format
-  - Escalation lock as first real check (before input guardrails)
-  - Handoff loop prevention via handoff_count_this_turn
-  - Health/chargeback flags → auto-escalation
+Complete LangGraph graph for the multi-agent customer-support flow.
 """
 
 from __future__ import annotations
@@ -42,13 +25,8 @@ from src.patterns.intent_classifier import (
 from src.patterns.reflection import reflection_validator_node, revise_response_node
 
 
-# ═════════════════════════════════════════════════════════════════════════════
-# Escalation lock node (Layer 0)
-# ═════════════════════════════════════════════════════════════════════════════
-
 async def escalation_lock_node(state: dict) -> dict:
-    """Check if session is already escalated. Reset per-turn flags."""
-    # Per-turn state reset
+    """Check escalation lock and reset per-turn volatile flags."""
     turn_reset = {
         "was_revised": False,
         "handoff_count_this_turn": 0,
@@ -65,6 +43,8 @@ async def escalation_lock_node(state: dict) -> dict:
         "flag_escalation_risk": False,
         "flag_chargeback_threat": False,
         "flag_health_concern": False,
+        "flag_entire_order_wrong": False,
+        "flag_reship_acceptance": False,
         "handoff_target": None,
         "intent_shifted": False,
     }
@@ -87,23 +67,17 @@ def _route_escalation_lock(state: dict) -> str:
     return "input_guardrails"
 
 
-# ═════════════════════════════════════════════════════════════════════════════
-# Input guardrails routing
-# ═════════════════════════════════════════════════════════════════════════════
-
 def _route_after_input_guardrails(state: dict) -> str:
     if state.get("input_blocked"):
         return "__end__"
 
-    # Health concern or chargeback → auto-escalate
     if state.get("flag_health_concern"):
         return "auto_escalate_health"
     if state.get("flag_chargeback_threat"):
-        # We don't auto-escalate for aggressive language on first message;
-        # we flag it and let the agent handle. But if combined with health → escalate.
         return "auto_escalate_chargeback"
+    if state.get("flag_entire_order_wrong") or state.get("flag_reship_acceptance"):
+        return "auto_escalate_reship"
 
-    # First turn vs multi-turn
     human_count = sum(
         1 for m in state.get("messages", [])
         if hasattr(m, "type") and m.type == "human"
@@ -113,13 +87,12 @@ def _route_after_input_guardrails(state: dict) -> str:
     return "intent_shift_check"
 
 
-# ═════════════════════════════════════════════════════════════════════════════
-# Auto-escalation for health concerns
-# ═════════════════════════════════════════════════════════════════════════════
-
 async def auto_escalate_health_node(state: dict) -> dict:
     """Immediately escalate health/safety concerns."""
     return {
+        "ticket_category": "NO_EFFECT",
+        "intent_confidence": int(state.get("intent_confidence") or 100),
+        "current_agent": "issue_agent",
         "escalation_reason": "health_concern",
         "agent_reasoning": [
             "AUTO-ESCALATE: Health/safety concern detected in input"
@@ -130,6 +103,9 @@ async def auto_escalate_health_node(state: dict) -> dict:
 async def auto_escalate_chargeback_node(state: dict) -> dict:
     """Immediately escalate chargeback threats."""
     return {
+        "ticket_category": state.get("ticket_category") or "REFUND",
+        "intent_confidence": int(state.get("intent_confidence") or 100),
+        "current_agent": state.get("current_agent") or "issue_agent",
         "escalation_reason": "chargeback_risk",
         "agent_reasoning": [
             "AUTO-ESCALATE: Chargeback threat detected in input"
@@ -137,57 +113,44 @@ async def auto_escalate_chargeback_node(state: dict) -> dict:
     }
 
 
-# ═════════════════════════════════════════════════════════════════════════════
-# Output guardrails routing
-# ═════════════════════════════════════════════════════════════════════════════
+async def auto_escalate_reship_node(state: dict) -> dict:
+    """Immediately escalate deterministic reship-required scenarios."""
+    return {
+        "ticket_category": "WRONG_MISSING",
+        "intent_confidence": int(state.get("intent_confidence") or 100),
+        "current_agent": "issue_agent",
+        "escalation_reason": "reship",
+        "agent_reasoning": [
+            "AUTO-ESCALATE: Reship required (entire order wrong or replacement accepted)"
+        ],
+    }
+
 
 def _route_after_output_guardrails(state: dict) -> str:
-    # Escalation detected
     if state.get("is_escalation"):
         return "escalation_handler"
-
-    # Handoff detected
     if state.get("is_handoff"):
         return "handoff_router"
-
-    # Failed output guardrails → revise
     if not state.get("output_guardrail_passed", True):
         return "revise_response"
-
-    # Passed → reflection
     return "reflection_validator"
 
-
-# ═════════════════════════════════════════════════════════════════════════════
-# Reflection routing
-# ═════════════════════════════════════════════════════════════════════════════
 
 def _route_after_reflection(state: dict) -> str:
     if state.get("reflection_passed", True):
         return "__end__"
-    # Only revise once (tracked by was_revised)
     if state.get("was_revised"):
-        return "__end__"  # Already revised once, ship it
+        return "__end__"
     return "revise_response"
 
 
-# ═════════════════════════════════════════════════════════════════════════════
-# Post-revision routing — send back through output guardrails (1 cycle max)
-# ═════════════════════════════════════════════════════════════════════════════
-
 def _route_after_revision(state: dict) -> str:
-    """After revision, go through output guardrails one more time, then end."""
     return "output_guardrails_final"
 
 
 async def output_guardrails_final_node(state: dict) -> dict:
-    """Second pass of output guardrails after revision. Minimal — just safety."""
     return output_guardrails_node(state)
 
-
-# ═════════════════════════════════════════════════════════════════════════════
-# Handoff routing
-# ═════════════════════════════════════════════════════════════════════════════
 
 def _route_after_handoff(state: dict) -> str:
     target = state.get("handoff_target", "supervisor")
@@ -195,19 +158,15 @@ def _route_after_handoff(state: dict) -> str:
     return target if target in valid else "supervisor"
 
 
-# ═════════════════════════════════════════════════════════════════════════════
-# Build Graph
-# ═════════════════════════════════════════════════════════════════════════════
-
 def build_graph() -> StateGraph:
     """Construct and compile the full multi-agent graph."""
     graph = StateGraph(CustomerSupportState)
 
-    # ── Nodes ────────────────────────────────────────────────────────────
     graph.add_node("escalation_lock", escalation_lock_node)
     graph.add_node("input_guardrails", input_guardrails_node)
     graph.add_node("auto_escalate_health", auto_escalate_health_node)
     graph.add_node("auto_escalate_chargeback", auto_escalate_chargeback_node)
+    graph.add_node("auto_escalate_reship", auto_escalate_reship_node)
     graph.add_node("intent_classifier", intent_classifier_node)
     graph.add_node("intent_shift_check", intent_shift_check_node)
     graph.add_node("supervisor", supervisor_node)
@@ -222,19 +181,14 @@ def build_graph() -> StateGraph:
     graph.add_node("escalation_handler", escalation_handler_node)
     graph.add_node("post_escalation", post_escalation_node)
 
-    # ── Edges ────────────────────────────────────────────────────────────
-
-    # Entry → Escalation Lock
     graph.add_edge(START, "escalation_lock")
 
-    # Escalation Lock → post_escalation | input_guardrails
     graph.add_conditional_edges(
         "escalation_lock",
         _route_escalation_lock,
         {"post_escalation": "post_escalation", "input_guardrails": "input_guardrails"},
     )
 
-    # Input Guardrails → end | auto_escalate | classifier | shift_check
     graph.add_conditional_edges(
         "input_guardrails",
         _route_after_input_guardrails,
@@ -242,16 +196,16 @@ def build_graph() -> StateGraph:
             "__end__": END,
             "auto_escalate_health": "auto_escalate_health",
             "auto_escalate_chargeback": "auto_escalate_chargeback",
+            "auto_escalate_reship": "auto_escalate_reship",
             "intent_classifier": "intent_classifier",
             "intent_shift_check": "intent_shift_check",
         },
     )
 
-    # Auto-escalate health → escalation handler
     graph.add_edge("auto_escalate_health", "escalation_handler")
     graph.add_edge("auto_escalate_chargeback", "escalation_handler")
+    graph.add_edge("auto_escalate_reship", "escalation_handler")
 
-    # Intent Classifier → agent or supervisor
     graph.add_conditional_edges(
         "intent_classifier",
         route_by_confidence,
@@ -263,7 +217,6 @@ def build_graph() -> StateGraph:
         },
     )
 
-    # Intent Shift Check → agent or supervisor
     graph.add_conditional_edges(
         "intent_shift_check",
         route_after_shift_check,
@@ -275,7 +228,6 @@ def build_graph() -> StateGraph:
         },
     )
 
-    # Supervisor → agent | direct | escalate
     graph.add_conditional_edges(
         "supervisor",
         supervisor_route,
@@ -288,12 +240,10 @@ def build_graph() -> StateGraph:
         },
     )
 
-    # ReAct Agents → Output Guardrails
     graph.add_edge("wismo_agent", "output_guardrails")
     graph.add_edge("issue_agent", "output_guardrails")
     graph.add_edge("account_agent", "output_guardrails")
 
-    # Output Guardrails → escalation | handoff | revise | reflection
     graph.add_conditional_edges(
         "output_guardrails",
         _route_after_output_guardrails,
@@ -305,7 +255,6 @@ def build_graph() -> StateGraph:
         },
     )
 
-    # Handoff Router → target agent or supervisor
     graph.add_conditional_edges(
         "handoff_router",
         _route_after_handoff,
@@ -317,23 +266,15 @@ def build_graph() -> StateGraph:
         },
     )
 
-    # Reflection → end | revise
     graph.add_conditional_edges(
         "reflection_validator",
         _route_after_reflection,
         {"__end__": END, "revise_response": "revise_response"},
     )
 
-    # Revision → output_guardrails_final (1 cycle)
     graph.add_edge("revise_response", "output_guardrails_final")
-
-    # Output guardrails final → end
     graph.add_edge("output_guardrails_final", END)
-
-    # Escalation → end
     graph.add_edge("escalation_handler", END)
-
-    # Post-escalation → end
     graph.add_edge("post_escalation", END)
 
     return graph

@@ -9,3 +9,5 @@ httpx
 pydantic
 python-dotenv
 websockets
+pytest
+pytest-asyncio

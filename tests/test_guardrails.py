@@ -292,6 +292,12 @@ class TestOutputGuardrails:
         result = output_guardrails_node(state)
         assert result["output_guardrail_passed"] is False
 
+    def test_generic_definitely_fails(self):
+        state = make_output_state("This will definitely fix everything for you.\n\nCaz")
+        result = output_guardrails_node(state)
+        assert result["output_guardrail_passed"] is False
+        assert any("definitely" in i.lower() for i in result["output_guardrail_issues"])
+
     def test_full_refund_no_questions_fails(self):
         state = make_output_state("I'll give you a full refund no questions asked!\n\nCaz")
         result = output_guardrails_node(state)
@@ -410,6 +416,20 @@ class TestOutputGuardrails:
         assert result["output_guardrail_passed"] is True
         assert result.get("is_escalation") is True
         assert result.get("escalation_reason") == "health_concern"
+
+    def test_escalate_reship_without_signal_blocked(self):
+        state = make_output_state("ESCALATE: reship | REASON: wrong item")
+        result = output_guardrails_node(state)
+        assert result["output_guardrail_passed"] is False
+        assert any("reship escalation blocked" in i.lower() for i in result["output_guardrail_issues"])
+
+    def test_escalate_reship_with_signal_passes(self):
+        state = make_output_state("ESCALATE: reship | REASON: replacement accepted")
+        state["flag_reship_acceptance"] = True
+        result = output_guardrails_node(state)
+        assert result["output_guardrail_passed"] is True
+        assert result.get("is_escalation") is True
+        assert result.get("escalation_reason") == "reship"
 
     # ── Clean response passes ──────────────────────────────────────────────
 
@@ -639,6 +659,32 @@ class TestToolCallGuardrails:
         )
         assert allowed is False
         assert "Duplicate" in reason
+
+    def test_same_turn_duplicate_blocked_with_turn_index(self):
+        state = {
+            "current_turn_index": 2,
+            "tool_calls_log": [
+                {"tool_name": "shopify_get_order_details", "params": {"orderId": "#11111"}, "turn_index": 1},
+                {"tool_name": "shopify_get_order_details", "params": {"orderId": "#43189"}, "turn_index": 2},
+            ],
+        }
+        allowed, reason, params = tool_call_guardrails(
+            "shopify_get_order_details", {"orderId": "#43189"}, state
+        )
+        assert allowed is False
+        assert "Duplicate" in reason
+
+    def test_cross_turn_repeat_allowed_with_turn_index(self):
+        state = {
+            "current_turn_index": 2,
+            "tool_calls_log": [
+                {"tool_name": "shopify_get_order_details", "params": {"orderId": "#43189"}, "turn_index": 1},
+            ],
+        }
+        allowed, reason, params = tool_call_guardrails(
+            "shopify_get_order_details", {"orderId": "#43189"}, state
+        )
+        assert allowed is True
 
     def test_different_params_not_duplicate(self):
         state = {

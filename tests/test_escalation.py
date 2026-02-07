@@ -97,3 +97,38 @@ def test_escalation_draft_order_id_falls_back_to_legacy_id(monkeypatch):
     payload = result["escalation_payload"]
 
     assert "legacy-draft-123" in payload["summary"]
+
+
+def test_escalation_backfills_intent_agent_fields(monkeypatch):
+    monkeypatch.setattr(escalation_module, "sonnet_llm", _StubLLM())
+
+    state = {
+        "customer_first_name": "Sam",
+        "customer_last_name": "Diaz",
+        "customer_email": "sam@example.com",
+        "escalation_reason": "chargeback_risk",
+        "messages": [_msg("I will dispute the charge.")],
+    }
+
+    result = asyncio.run(escalation_module.escalation_handler_node(state))
+    assert result["ticket_category"] == "REFUND"
+    assert result["current_agent"] == "issue_agent"
+    assert result["intent_confidence"] == 100
+
+
+def test_health_escalation_message_includes_stop_using(monkeypatch):
+    monkeypatch.setattr(escalation_module, "sonnet_llm", _StubLLM())
+
+    state = {
+        "customer_first_name": "Sarah",
+        "customer_last_name": "Jones",
+        "customer_email": "sarah@example.com",
+        "escalation_reason": "health_concern",
+        "messages": [_msg("My child has hives and trouble breathing.")],
+    }
+
+    result = asyncio.run(escalation_module.escalation_handler_node(state))
+    msg = result["messages"][0].content.lower()
+    assert "stop using" in msg
+    assert "health" in msg
+    assert "monica" in msg

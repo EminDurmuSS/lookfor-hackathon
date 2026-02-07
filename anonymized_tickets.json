@@ -1,0 +1,530 @@
+[
+  {
+    "conversationId": "<2a6b53ac5ee8@example.com>",
+    "customerId": "cust_8b7c460f",
+    "createdAt": "19-Jul-2025 13:07:09",
+    "conversationType": "email",
+    "subject": "RE: Your order is ready to ship!",
+    "conversation": "Customer's message: \"Hi,  Could you please confirm that only part of my order has been sent.  I have recieved the mood calming stickers and the tick repellent stickers only.  Many thanks  Parker Wilson Parker Wilson Sent from my Galaxy -------- Original message --------\" Customer's message: \"You received a new message from your online store's contact    form.     Country Code:     GB     Name:     Mrs Parker Wilson Parker Wilson     Email:     user_8b7c460f7e@example.com     Phone Number:     +16452449831     Comment:     Hello,I am trying to determine if the three other products from my order have been dispatched, are still to be dispatched, or have been lost. Order no. NP9363178. I have received the Zen patch and the kids tick stickers.Kind regardsParker Wilson Parker Wilson\" Agent's message: \"Hi there,Thanks for reaching out to NATPAT Support—your note has landed safely in our inbox.Our aim is always to reply the same day, but a few of our follks are currently off recharging and we’re training fresh faces to serve you even better. Because of that, responses are running a little behind (generally within 36–48 hours). We’re quite upset with ourselves that this has happened, but we are racing to get back on track and our promise is that you will be happy once we get to resolve your enquiry.We appreciate your patience and can’t wait to get this sorted for you.Cheers,The NATPAT Support Team\" Agent's message: \"Hi Parker Wilson,Thanks for reaching out! I’m sorry for the delay and any inconvenience caused. The other items from your order were sent separately.Here’s the tracking link for your SleepyPatch for Adults and MosquioPatch for Adults:  https://example.com/mock-link here’s the tracking link for your SunnyPatch UV-Detecting Stickers:  https://example.com/mock-link you need any more help tracking your items, just let me know!Agent xx\" Customer's message: \"That is helpful, thank you. Sent from my Galaxy -------- Original message -------- Sent from my Galaxy -------- Original message --------\" Agent's message: \"Hi there,Thanks for reaching out to NATPAT Support—your note has landed safely in our inbox.Our aim is always to reply the same day, but a few of our follks are currently off recharging and we’re training fresh faces to serve you even better. Because of that, responses are running a little behind (generally within 36–48 hours).We’re quite upset with ourselves that this has happened, but we are racing to get back on track and our promise is that you will be happy once we get to resolve your enquiry.We appreciate your patience and can’t wait to get this sorted for you.Cheers,The NATPAT Support Team\""
+  },
+  {
+    "conversationId": "<26d3e1d38578@example.com>",
+    "customerId": "cust_b80233f7",
+    "createdAt": "19-Jul-2025 13:07:55",
+    "conversationType": "email",
+    "subject": "Return",
+    "conversation": "Customer's message: \"Hello, my order number is  Order #NP6664669  My order was to include 2 packs for adults and i received all packs for kids. Also, the packs were the old version of buzzpatch. The packs barely had a scent as if they were dried out. Alls to say they didn’t work and i would like a refund please.  Thank you Melissa Sent from my iPhone\" Agent's message: \"Hi Riley ReedThanks for checking in (but sorry you had to!) 🙏Your order was 100% sent and I actually thought it would have arrived by now 🤔 Here's the link to check: https://example.com/mock-link Can you please confirm if this address is correct?&nbsp;[REDACTED_ADDRESS]"
+  },
+  {
+    "conversationId": "<c733c6be852d@example.com>",
+    "customerId": "cust_4979a893",
+    "createdAt": "19-Jul-2025 13:21:21",
+    "conversationType": "email",
+    "subject": "Issue with Order# NP1366949",
+    "conversation": "Customer's message: \"Ours fall off our clothing pretty easily. If they stayed on, they would do a better job.\""
+  },
+  {
+    "conversationId": "<a3811d25e0f1@example.com>",
+    "customerId": "cust_574524be",
+    "createdAt": "19-Jul-2025 13:21:23",
+    "conversationType": "email",
+    "subject": "Re: NATPAT Order #NP1373992 confirmed",
+    "conversation": "Customer's message: \"My sister,Cassie Ann, would like to consult with you. She saw your ad on FBK and is very interested. She tried to contact you through your form but wasn’t successful. Could you add her as a friend so she can message you and you can talk more?This is her profile. [https://example.com/mock-link again, she’s very interested.\""
+  },
+  {
+    "conversationId": "<b8ec4ea76a34@example.com>",
+    "customerId": "cust_b7d0014c",
+    "createdAt": "19-Jul-2025 13:24:12",
+    "conversationType": "email",
+    "subject": "Return",
+    "conversation": "Customer's message: \"Hello!  I'm reaching out regarding my most recent order, Order# NP7412770.  I have been using NATPAT for several years without any issues, but the MagicPatch Itch Relief Patches I received seem to be the old version and the packaging is different than what is advertised on the website. I have attached a photo of the packaging I received for all 8 packs of the MagicPatch Itch Relief Patches that I received in my order versus the one on the website. The ones I received state that there are 27 patches, while the website states there are 32 patches in each pack. The shape of the patches are different as well- I recall the ones I have are the style that was originally offered years ago.   The most glaring issue is the performance and staying power of the patches I received. They fall off almost immediately and are guaranteed gone after sleeping. In the past, the patches would stay on for several days even with swimming, showering, and regular daily activities.  Overall, I'm displeased with the patches I received and I would like to get them replaced with the new version that are advertised on the website.  Thank you, Jan Heyrana --  Jan Q. Heyrana, M.Ed. | AMI Certified Primary Guide\" Agent's message: \"Hi Jan,Thanks for reaching out and sharing your experience with the MagicPatch Itch Relief Patches. I’m sorry to hear they aren’t sticking well for you—that’s definitely frustrating!The new packaging and updated patch design you see on our website aren’t available yet in the US or Canada (they’re currently only available in Australia). We expect to have the new version implemented in the US within 4-6 weeks.If you’d like, I can send you 2 free packs of the current version to make up for the inconvenience. Just let me know!\""
+  },
+  {
+    "conversationId": "<1fc5fbc1fdd8@example.com>",
+    "customerId": "cust_b1f341ae",
+    "createdAt": "19-Jul-2025 13:26:04",
+    "conversationType": "email",
+    "subject": "Order update",
+    "conversation": "Customer's message: \"Where is my order ?  Frédéric +19409061934\" Agent's message: \"Hi Frederic,I apologize for the delay in your order 🙏The Mosquito Patches were out of stock due to high demand, causing a hold-up in fulfilling your order within the expected timeframe. Fresh stocks have arrived, and your order has been dispatched.If you can wait a little longer, I'm happy to give you a 10% discount or refund once you receive them.Apologies again for the delays.Agent xx\""
+  },
+  {
+    "conversationId": "<9fda5b06e8dd@example.com>",
+    "customerId": "cust_efd8202c",
+    "createdAt": "19-Jul-2025 13:31:05",
+    "conversationType": "email",
+    "subject": "Fwd: NATPAT Order #NP1375783 confirmed",
+    "conversation": "Customer's message: \"I would like to return some of my order!  I opened one and was not happy with the results.   My order # was NP0192094.  Please advise how to move forward.    Thank you  Jodi Sweezy  Sent from my iPhone\" Agent's message: \"Hi Jodi,I'm so sorry to hear that BuzzPatch did not work for you. That's just terrible! 😳I'm going to pass this on to our testing team here to see what they say.We have found that with specific types of mosquitoes, or for people who have an incredibly strong attraction for mosquitoes, they need something more topical like a&nbsp;spray. This is usually only in ~7-10% of cases.There are two options that I can offer you:I can issue a 60% refund so it will not hurt us and keep all the patchesOr you can return them to this address at your address:The Natural Patch Co1981 E Cross RdGalena IL 61036Once sent, let us know of the tracking number and we'll refund you in full once we received the product back.&nbsp;Please let me know your preference, totally fine whichever is best for you. 🙏Agent xx\" Customer's message: \"Give me a refund!  Full please!  This place is a joke!  Sent from Yahoo Mail for iPhone\""
+  },
+  {
+    "conversationId": "<cceada7cbba0@example.com>",
+    "customerId": "cust_3e673590",
+    "createdAt": "19-Jul-2025 13:35:37",
+    "conversationType": "email",
+    "subject": "Re: NATPAT Order #NP1386385 confirmed",
+    "conversation": "Customer's message: \"Order# ONE+19734780131US  Hello, I was just looking to get a little information on my delivery. We are excited to try your products. We are just hoping it arrives soon for our trip. Was just curious if you can give me an update on our delivery.  Thank you for your time!\" Agent's message: \"Hi Juan,Thanks for reaching out! I wanted to let you know that according to the tracking info, your order (ONE+19734780131US) was delivered on July 21st.You can check the details here: https://example.com/mock-link you please check your mailbox or delivery area and confirm if you’ve received it?If not, just let me know and I’ll be happy to assist further.Agent xx\""
+  },
+  {
+    "conversationId": "<8f36502b475e@example.com>",
+    "customerId": "cust_f0604934",
+    "createdAt": "19-Jul-2025 13:49:05",
+    "conversationType": "email",
+    "subject": "Cancel all future orders NATPAT Order #NP1364562 confirmed",
+    "conversation": "Customer's message: \"I haven’t used stickers but I have used plug in calming pheromones.\""
+  },
+  {
+    "conversationId": "<c0f5bf8302d8@example.com>",
+    "customerId": "cust_8c377117",
+    "createdAt": "19-Jul-2025 13:52:42",
+    "conversationType": "email",
+    "subject": "Re: NATPAT Order #NP1380121 confirmed",
+    "conversation": "Customer's message: \"Hello, I am wondering when my order might be shipped. Is there any update you can share?  Many thanks, - Donna ---------- Forwarded message ---------\" Agent's message: \"Hi Donna,Thanks for reaching out (sorry you had to!) 🙏We reached out to our courier to know the status of the shipment, rest assured that your order was dispatched and I actually thought it would have arrived by now 🤔May you please confirm if this address is correct?&nbsp;[REDACTED_ADDRESS]"
+  },
+  {
+    "conversationId": "<a50c6aa1db2f@example.com>",
+    "customerId": "cust_f593958f",
+    "createdAt": "19-Jul-2025 14:11:21",
+    "conversationType": "email",
+    "subject": "(no subject)",
+    "conversation": "Customer's message: \"Patch Power\" Agent's message: \"Hi Siow,Thanks so much! 😊More patch power to you,Agent xx\""
+  },
+  {
+    "conversationId": "<89c18ffc0d3c@example.com>",
+    "customerId": "cust_96223fc1",
+    "createdAt": "19-Jul-2025 14:23:25",
+    "conversationType": "email",
+    "subject": "Cancel",
+    "conversation": "Customer's message: \"I'm wanting the flea patch only.  Can this patch be attached to the collar, my kelpie chewed two lockets attached to her collar. I cannot afford to keep buying lockets\" Agent's message: \"Hi Mary,Thanks for reaching out! I totally understand wanting a simple, cost-effective way to keep the flea patch on your Kelpie’s collar.While we do recommend using the Pet Locket for the best fit and security, you can definitely stick the patch directly onto your dog’s collar, harness, or any other accessory that can hold it. Just make sure it’s a spot where the patch can stay put without getting chewed off easily.Agent xx\""
+  },
+  {
+    "conversationId": "<99b432cbd5f0@example.com>",
+    "customerId": "cust_bb90b529",
+    "createdAt": "19-Jul-2025 14:24:43",
+    "conversationType": "email",
+    "subject": "Order number NP1370371",
+    "conversation": "Customer's message: \"Hello,  I’m not sure why I received another NatPat order but please cancel all future orders.  Please confirm that this has been done.  Thank you.  Rio Slaven  NATPAT Order #NP2361630 confirmed\" Agent's message: \"Hi Rio,Thanks for reaching out (sorry you had to!)We offer both a Subscribe &amp; Save and a one-time purchase option. Our subscriptions come with an additional 15% off orders for life, plus free gifts, and priority customer service.Would you like us to delay your subscription for 30 days so you will have time to decide?You can also easily manage your subscription, cancel or update your account details by visiting this link: https://example.com/mock-link keep me posted if you're able to make the changes/cancellation you need.If you encounter any issues or need further assistance, feel free to contact me, and I'll be more than happy to help.Agent xx\" Customer's message: \"Thank you.  I was able to cancel online.\" Agent's message: \"Hi there,Thanks for reaching out to NATPAT Support—your note has landed safely in our inbox.Our aim is always to reply the same day, but a few of our follks are currently off recharging and we’re training fresh faces to serve you even better. Because of that, responses are running a little behind (generally within 36–48 hours). We’re quite upset with ourselves that this has happened, but we are racing to get back on track and our promise is that you will be happy once we get to resolve your enquiry.We appreciate your patience and can’t wait to get this sorted for you.Cheers,The NATPAT Support Team\" Agent's message: \"Awesome!Thanks so much, Rio.Agent\""
+  },
+  {
+    "conversationId": "<908bdf72cd8e@example.com>",
+    "customerId": "cust_5285325a",
+    "createdAt": "19-Jul-2025 14:37:42",
+    "conversationType": "email",
+    "subject": "Fwd: NATPAT Order #NP1382560 confirmed",
+    "conversation": "Customer's message: \"PatchPower Sent from my iPhone\" Agent's message: \"Hi Kristin,Thanks so much! 😊More patch power to you,Agent xx\" Customer's message: \"When will this ship!? I’ve been waiting. We’re past the date your company suggested as a delivery date. My son has mosquito bites all over and would really like my purchase to be fulfilled.  If they won’t be here till after summer then what’s the point. Please send them.  Thanks. Kirstin. Sent from my iPhone\" Agent's message: \"Hi there,Thanks for reaching out to NATPAT Support—your note has landed safely in our inbox.Our aim is always to reply the same day, but a few of our follks are currently off recharging and we’re training fresh faces to serve you even better. Because of that, responses are running a little behind (generally within 36–48 hours). We’re quite upset with ourselves that this has happened, but we are racing to get back on track and our promise is that you will be happy once we get to resolve your enquiry.We appreciate your patience and can’t wait to get this sorted for you.Cheers,The NATPAT Support Team\" Agent's message: \"Hi Kirstin,Thank you for your patience.&nbsp;The USPS we use for free shipping orders is not best and the tracking may not be reliable at times. That said, I can assure you that your order was dispatched from our warehouse in Galena, IL on July 9th.&nbsp;May you please confirm if this address is correct?111 Beacon Point CtJoppa MD 21085United States&nbsp;Perhaps, it is already in/at your mailbox? If it's not there, I’d be happy to resend it at no extra cost via Registered Postage so we can properly track it or refund if you are no longer interested.&nbsp;Apologies again for the delay, and thank you for your understanding.&nbsp;Kindly,Agent xx\""
+  },
+  {
+    "conversationId": "<b9623907792a@example.com>",
+    "customerId": "cust_db4128f1",
+    "createdAt": "19-Jul-2025 14:41:04",
+    "conversationType": "email",
+    "subject": "Package didn't arrive: Request a refund(Order: 113-3656428-1861054)",
+    "conversation": "Customer's message: \"I ordered the tick stickers on Amazon and I received the memory ones. I’d like to get this fixed please.  Joe Morgan +12351077824  Sent from my iPhone\" Agent's message: \"Hi Joe,I'm so sorry to hear about that, it's not the way this is meant to go.Could you please send us an image of the packs you received?Again, I'm so sorry for the inconvenience. 🙏Agent xx\""
+  },
+  {
+    "conversationId": "<f0d2ed02cfad@example.com>",
+    "customerId": "cust_0df29d1f",
+    "createdAt": "19-Jul-2025 14:41:21",
+    "conversationType": "email",
+    "subject": "NATPAT Order #NP1380209",
+    "conversation": "Customer's message: \"Where's my order, keeps saying bits in Coppell texas I order was suppose to be here the 16th,,,\" Customer's message: \"Where is my order ¡!!!!!!!!!!!!!!!!!\" Agent's message: \"Hi there,Thanks for reaching out to NATPAT Support—your note has landed safely in our inbox.Our aim is always to reply the same day, but a few of our follks are currently off recharging and we’re training fresh faces to serve you even better. Because of that, responses are running a little behind (generally within 36–48 hours). We’re quite upset with ourselves that this has happened, but we are racing to get back on track and our promise is that you will be happy once we get to resolve your enquiry.We appreciate your patience and can’t wait to get this sorted for you.Cheers,The NATPAT Support Team\" Agent's message: \"Hi Carman,I apologize for the delay in your order 🙏The Mosquito Patches were out of stock due to high demand, causing a hold-up in fulfilling your order within the expected timeframe. Fresh stocks have arrived, and your order has been dispatched:&nbsp;https://example.com/mock-link If you can wait a little longer, I'm happy to give you a 10% discount or refund once you receive them.Apologies again for the delays.Agent xx\" Customer's message: \"Ok I'm pretty mad at this point, no contact anymore. I'm contacting the Better Budiness Bureau and also FB on this matter ,,,,\" Agent's message: \"Hi there,Thanks for reaching out to NATPAT Support—your note has landed safely in our inbox.Our aim is always to reply the same day, but a few of our follks are currently off recharging and we’re training fresh faces to serve you even better. Because of that, responses are running a little behind (generally within 36–48 hours).We’re quite upset with ourselves that this has happened, but we are racing to get back on track and our promise is that you will be happy once we get to resolve your enquiry.We appreciate your patience and can’t wait to get this sorted for you.Cheers,The NATPAT Support Team\" Agent's message: \"Hi Carman,I completely understand your frustration, and I’m really sorry we didn’t keep you updated about the stock situation.Your order is on its way now, and you can track it here:&nbsp;https://example.com/mock-link keeping an eye on it to make sure it reaches you as soon as possible.If there’s anything else I can do to make this right or if you have any other questions, please let me know.Kindly,Agent xx\""
+  },
+  {
+    "conversationId": "<bf1b53d90ded@example.com>",
+    "customerId": "cust_fd614728",
+    "createdAt": "19-Jul-2025 14:46:12",
+    "conversationType": "email",
+    "subject": "Re: NATPAT Order #NP1384368 confirmed",
+    "conversation": "Customer's message: \"I've always had trouble falling asleep. When I was little I would have my mom sit in my room with me until I fell asleep so I wasn't alone. If she tried to leave early I would whine that I \"\"wasn't asleep yet\"\"\""
+  },
+  {
+    "conversationId": "<3408c799ef43@example.com>",
+    "customerId": "cust_87ffb6c4",
+    "createdAt": "19-Jul-2025 14:56:20",
+    "conversationType": "email",
+    "subject": "Re: Your order has been delivered!",
+    "conversation": "Customer's message: \"I need to cancel my subscription.  Name is Janette MacAusland address is [REDACTED_ADDRESS]"
+  },
+  {
+    "conversationId": "<ae035d16c23c@example.com>",
+    "customerId": "cust_31bb0d20",
+    "createdAt": "19-Jul-2025 14:58:48",
+    "conversationType": "email",
+    "subject": "Re: NATPAT Order #NP1386467 confirmed",
+    "conversation": "Customer's message: \"I was notified this order was delivered July 8, 2025, but I did not receive it.  Thank you in advance for your help.  Christine Lanum, cell number +14743070825\" Agent's message: \"Hi Christine,Apologies for the delays 😞I checked your order, and it has already been delivered. Here's the link to check:&nbsp;https://example.com/mock-link May you please confirm if this address is correct?&nbsp;[REDACTED_ADDRESS]"
+  },
+  {
+    "conversationId": "<b1da947dd21d@example.com>",
+    "customerId": "cust_b15ae6c9",
+    "createdAt": "19-Jul-2025 15:04:25",
+    "conversationType": "email",
+    "subject": "(no subject)",
+    "conversation": "Customer's message: \"Is there an ETA on this order please?  Thank you!  Begin forwarded message:\" Customer's message: \"Hello!  I am following up to see the status on the order. The USPS tracking number that was in the email is not valid, according to the usps website.  Thank you!  Begin forwarded message:\" Agent's message: \"Hi Terri,Thanks for checking in (but sorry you had to!) 🙏Your order was 100% sent and I actually thought it would have arrived by now 🤔Can you please confirm if this address is correct?&nbsp;[REDACTED_ADDRESS]"
+  },
+  {
+    "conversationId": "<5fcb88226f4a@example.com>",
+    "customerId": "cust_6f6ef163",
+    "createdAt": "19-Jul-2025 15:07:36",
+    "conversationType": "email",
+    "subject": "Status of Order #NP1381916",
+    "conversation": "Customer's message: \"MessengerAttachments/fd0b28a7-9058-4c4f-8a3e-4b2d5b5dcce7/3c6df717-7225-4122-a1cc-1f760dfb4b52.mp4\" Customer's message: \"Are they reusable? Do you have samples?\" Agent's message: \"Thanks hairstoree, I've got this message and will pass it to someone on our team to reply pronto.  🤖 -NATPAT\" Agent's message: \"Hi Keesh,Thanks for reaching out!Yes, if the patch still has a noticeable scent, it’s safe to reuse. We appreciate your interest, but unfortunately, we don’t offer free samples at this time. 🙏You're welcome to use the code BUZZTIME10 for 10% off your order: https://example.com/mock-link 😉More patch power to you,Agent xx\""
+  },
+  {
+    "conversationId": "<55a609d1aba0@example.com>",
+    "customerId": "cust_b3015ce8",
+    "createdAt": "19-Jul-2025 15:24:36",
+    "conversationType": "email",
+    "subject": "Re: Quick one (sorry again!)",
+    "conversation": "Customer's message: \"  You have received a message.  Order ID: +131582883944:  #   ASIN         Product Name 1   B09745CSRV   NATPAT Buzz Patch Mosquito Patch Stickers for Kids - Plant                  Based Ingredients, Non-Toxic - The Original All Natural                  Citronella Essential Oil Insect Patch, DEET Free, for                  Toddlers, Kids (60 Pack)  Message:   I needed this to send my kid to camp tomorrow. He will not be here once it arrives. I would like to cancel it.                   View Message                                  No Response Needed                                  Report questionable activity              This service is provided solely for communication with buyers. Please be aware that Amazon will never ask you to provide your login information or verify your identity through this service. If you receive any messages through this service requesting your Seller Central login or account information, report the message and ignore the request.                         Was this email helpful?                                                                                                                                           Copyright 2025 Amazon, Inc, or its affiliates. All rights reserved. Amazon.com, [REDACTED_ADDRESS]"
+  },
+  {
+    "conversationId": "<5a554723f326@example.com>",
+    "customerId": "cust_c9a44986",
+    "createdAt": "19-Jul-2025 15:27:39",
+    "conversationType": "email",
+    "subject": "Re: NATPAT Order #NP1386474 confirmed",
+    "conversation": "Customer's message: \"Hello,  I received my NATPAT order and one of the bags is expired. The other two bags received have a different lot no.   Lot no.: TRBP60007 Expiry Date: 2025-05  Can you please send a replacement?  Thank you, Dana Shaffer\" Customer's message: \"Hello,  I wanted to follow up as I have not received a response.   Thank you, Dana  > On Jul 19, 2025, at 1:41 PM, user_0df29d1f54@example.com wrote: >  > ﻿Hello, >  > I received my NATPAT order and one of the bags is expired. The other two bags received have a different lot no. >  > Lot no.: TRBP60007 > Expiry Date: 2025-05 >  > Can you please send a replacement? >  > Thank you, > Dana Shaffer\" Agent's message: \"Hi there,Thanks for reaching out to NATPAT Support—your note has landed safely in our inbox.Our aim is always to reply the same day, but a few of our follks are currently off recharging and we’re training fresh faces to serve you even better. Because of that, responses are running a little behind (generally within 36–48 hours). We’re quite upset with ourselves that this has happened, but we are racing to get back on track and our promise is that you will be happy once we get to resolve your enquiry.We appreciate your patience and can’t wait to get this sorted for you.Cheers,The NATPAT Support Team\" Agent's message: \"Hi Dana,Thanks for reaching out and letting us know about the expired pack. I’m really sorry for the inconvenience!Could you please send us a photo of the packs you received? That way, we can check everything and assist you further.Looking forward to your reply!Agent xx\" Customer's message: \"Hello,  Please see expired pouch.   Thank you, Dana\" Agent's message: \"Hi there,Thanks for reaching out to NATPAT Support—your note has landed safely in our inbox.Our aim is always to reply the same day, but a few of our follks are currently off recharging and we’re training fresh faces to serve you even better. Because of that, responses are running a little behind (generally within 36–48 hours).We’re quite upset with ourselves that this has happened, but we are racing to get back on track and our promise is that you will be happy once we get to resolve your enquiry.We appreciate your patience and can’t wait to get this sorted for you.Cheers,The NATPAT Support Team\""
+  },
+  {
+    "conversationId": "<42cd45294f69@example.com>",
+    "customerId": "cust_68baec07",
+    "createdAt": "19-Jul-2025 15:28:12",
+    "conversationType": "email",
+    "subject": "New customer message on July 19, 2025 at 12:28 pm",
+    "conversation": "Customer's message: \"patch power Sent from my iPad\" Agent's message: \"Hi Kathryn,Thanks so much! 😊More patch power to you,Agent xx\""
+  },
+  {
+    "conversationId": "<31bc012799de@example.com>",
+    "customerId": "cust_12cae385",
+    "createdAt": "19-Jul-2025 15:42:57",
+    "conversationType": "email",
+    "subject": "(no subject)",
+    "conversation": "Customer's message: \"That a TRUE....PHUCK AROUND & FIND OUT situation\" Agent's message: \"no message\""
+  },
+  {
+    "conversationId": "<239e90a662de@example.com>",
+    "customerId": "cust_315307a1",
+    "createdAt": "19-Jul-2025 15:43:49",
+    "conversationType": "email",
+    "subject": "Re: Quick one (sorry again!)",
+    "conversation": "Customer's message: \"Thank you for resending the order.  I received my package last night.  I can't to try these on my granddaughter.  The mosquitoes eat her up and he is allergic to them.  She gets huge marks on her where they bite her.  Christy Allison\" Agent's message: \"Thanks so much for letting me know you received your patches,&nbsp;ChristyI’m really glad they’ve arrived. Enjoy trying them out.Apologies for the delays 🙏If you have any questions or need anything else, just give me a shout!Agent xx\""
+  },
+  {
+    "conversationId": "<37e0db5645d6@example.com>",
+    "customerId": "cust_efe814ee",
+    "createdAt": "19-Jul-2025 15:46:22",
+    "conversationType": "email",
+    "subject": "Return request",
+    "conversation": "Customer's message: \"Patch Power\" Agent's message: \"Hi Eduardo,Thanks so much! 😊More patch power to you,Agent xx\""
+  },
+  {
+    "conversationId": "<08b0a587d009@example.com>",
+    "customerId": "cust_31696290",
+    "createdAt": "19-Jul-2025 15:50:33",
+    "conversationType": "email",
+    "subject": "Status of order NP1354045",
+    "conversation": "Customer's message: \"Please stop swearing it’s so unprofessional and unnecessary.\" Agent's message: \"no message\""
+  },
+  {
+    "conversationId": "<e07e2249b5ab@example.com>",
+    "customerId": "cust_bd5985eb",
+    "createdAt": "19-Jul-2025 16:23:25",
+    "conversationType": "email",
+    "subject": "Order not shipped",
+    "conversation": "Customer's message: \"Where is my order?  Order #NP3352659\" Agent's message: \"Hi Sarah,Thanks for reaching out (sorry you had to!)Your order was 100% sent on Jul 10, 2025 and I actually thought it would have arrived by now.Looking on the tracking info https://example.com/mock-link your order is still in-transit status.Fingers crossed you'll have it this week or early next week -I'm really sorry for the delays, it's not the way this is meant to go.Please let me know what I can do to make this right? 🙏More patch power to you,Agent xx\" Customer's message: \"I see that it is still ’in transit’ .. but it hasn’t moved from that status in days. Can we cancel and have a refund?\" Agent's message: \"Hi there,Thanks for reaching out to NATPAT Support—your note has landed safely in our inbox.Our aim is always to reply the same day, but a few of our follks are currently off recharging and we’re training fresh faces to serve you even better. Because of that, responses are running a little behind (generally within 36–48 hours). We’re quite upset with ourselves that this has happened, but we are racing to get back on track and our promise is that you will be happy once we get to resolve your enquiry.We appreciate your patience and can’t wait to get this sorted for you.Cheers,The NATPAT Support Team\" Customer's message: \"Refund? I still have yet to see any movement in the shipping status. I would like a refund.\" Agent's message: \"Hi there,Thanks for reaching out to NATPAT Support—your note has landed safely in our inbox.Our aim is always to reply the same day, but a few of our follks are currently off recharging and we’re training fresh faces to serve you even better. Because of that, responses are running a little behind (generally within 36–48 hours). We’re quite upset with ourselves that this has happened, but we are racing to get back on track and our promise is that you will be happy once we get to resolve your enquiry.We appreciate your patience and can’t wait to get this sorted for you.Cheers,The NATPAT Support Team\" Agent's message: \"Hi Sarah,Apologies for getting back to you late. 🙏 I just checked the tracking and it should arrive within this week. https://example.com/mock-link we can wait until the end of this week, I would greatly appreciate that.Otherwise, I'll proceed to refunding you in full.I'm so sorry for this inconvenience.Agent \" Customer's message: \"Package was rec’d. thank you.\" Agent's message: \"Hi there,Thanks for reaching out to NATPAT Support—your note has landed safely in our inbox.Our aim is always to reply the same day, but a few of our follks are currently off recharging and we’re training fresh faces to serve you even better. Because of that, responses are running a little behind (generally within 36–48 hours).We’re quite upset with ourselves that this has happened, but we are racing to get back on track and our promise is that you will be happy once we get to resolve your enquiry.We appreciate your patience and can’t wait to get this sorted for you.Cheers,The NATPAT Support Team\" Agent's message: \"Thanks so much for letting me know you received your patches,&nbsp;SarahIf you have any questions or need anything else, just give me a shout!Apologies for the delays 🙏Agent xx\""
+  },
+  {
+    "conversationId": "<3260f9b29b27@example.com>",
+    "customerId": "cust_32bb743c",
+    "createdAt": "19-Jul-2025 16:25:44",
+    "conversationType": "email",
+    "subject": "RE: NATPAT Order #NP1386497 confirmed",
+    "conversation": "Customer's message: \"I was trying to get some sun on my legs at work when one of my kids joined and informed me that “Mommy likes to lay out in the yard nekked while daddy mows the grass!” 🙈\" Agent's message: \"Haha, honesty is the best policy! 😂🙈\""
+  },
+  {
+    "conversationId": "<569419f19877@example.com>",
+    "customerId": "cust_bed54416",
+    "createdAt": "19-Jul-2025 16:35:39",
+    "conversationType": "email",
+    "subject": "Missing Order",
+    "conversation": "Customer's message: \"Hello,  I had placed an order on July 11th. I have not yet received any updates on the shipping status of my order.  Can you please help me with this?  Order #NP8527336  Thanks,  Neel Iyer\" Agent's message: \"Hi Neel,Thanks for reaching out (sorry you had to!)Your order was 100% sent on Jul 11, 2025 and I actually thought it would have arrived by now.Looking on the tracking info https://example.com/mock-link your order is still in-transit status.Fingers crossed you'll have it this week or early next week -I'm really sorry for the delays, it's not the way this is meant to go.Please let me know what I can do to make this right? 🙏More patch power to you,Agent xx\""
+  },
+  {
+    "conversationId": "<0603f0538cf5@example.com>",
+    "customerId": "cust_e38db07b",
+    "createdAt": "19-Jul-2025 16:51:15",
+    "conversationType": "email",
+    "subject": "NP1382086",
+    "conversation": "Customer's message: \"I found them at target where I live\" Agent's message: \"no message\""
+  },
+  {
+    "conversationId": "<6c489a395a72@example.com>",
+    "customerId": "cust_eb769d8e",
+    "createdAt": "19-Jul-2025 16:59:17",
+    "conversationType": "email",
+    "subject": "(no subject)",
+    "conversation": "Customer's message: \"I have not yet received them.  Jenna Smith  user_b3015ce891@example.com\" Agent's message: \"Hi there,Thanks for reaching out to NATPAT Support—your note has landed safely in our inbox.Our aim is always to reply the same day, but a few of our follks are currently off recharging and we’re training fresh faces to serve you even better. Because of that, responses are running a little behind (generally within 36–48 hours). We’re quite upset with ourselves that this has happened, but we are racing to get back on track and our promise is that you will be happy once we get to resolve your enquiry.We appreciate your patience and can’t wait to get this sorted for you.Cheers,The NATPAT Support Team\" Agent's message: \"Hi Jenna,Thanks for checking in (but sorry you had to!) 🙏Your order was 100% sent and I actually thought it would have arrived by now 🤔Can you please confirm if this address is correct?&nbsp;[REDACTED_ADDRESS]"
+  },
+  {
+    "conversationId": "<4055cff80998@example.com>",
+    "customerId": "cust_07ae42d7",
+    "createdAt": "19-Jul-2025 17:27:59",
+    "conversationType": "email",
+    "subject": "Order",
+    "conversation": "Customer's message: \"Patch power !  Lauralee Beaurieux\" Agent's message: \"Thanks so much, Lauralee 😊 More patch power to you,Agent xx\""
+  },
+  {
+    "conversationId": "<6ca8212cec20@example.com>",
+    "customerId": "cust_9483638a",
+    "createdAt": "19-Jul-2025 17:33:13",
+    "conversationType": "email",
+    "subject": "Order not even showing as sent - I ordered on 9th July ORDER NO: NP1380411",
+    "conversation": "Customer's message: \"You received a new message from your online store's contact    form.     Country Code:     US     Name:     Andrea Wesolowski     Email:     user_68baec07fe@example.com     Phone Number:     +16027919021     Comment:     Hello,I ordered 4 packs of natpat stickers on June 21st and I still never received them. Could they be sent to me please?Thanks,Andrea\" Agent's message: \"Hi Andrea,Apologies for the delays 😞I checked your order, and it has already been delivered. Here's the link to check:&nbsp;https://example.com/mock-link May you please confirm if this address is correct?&nbsp;[REDACTED_ADDRESS]"
+  },
+  {
+    "conversationId": "<9a8535107562@example.com>",
+    "customerId": "cust_39619411",
+    "createdAt": "19-Jul-2025 17:46:36",
+    "conversationType": "email",
+    "subject": "Payment",
+    "conversation": "Customer's message: \"Hello,  I placed this order on July 2, 2025 and have not received it!  What's the problem?  It should have been here  8 days ago.  Sincerity, Deanna\" Agent's message: \"Hi Deanna,Apologies for the delays 😞I checked your order, and it has already been delivered. Here's the link to check:&nbsp;https://example.com/mock-link May you please confirm if this address is correct?&nbsp;[REDACTED_ADDRESS]"
+  },
+  {
+    "conversationId": "<da2983de3749@example.com>",
+    "customerId": "cust_87f8986d",
+    "createdAt": "19-Jul-2025 17:48:39",
+    "conversationType": "email",
+    "subject": "Re: NATPAT Order #NP1373568 confirmed",
+    "conversation": "Customer's message: \"Hi Agent,  My package hasn't still arrived so there is nothing to review yet.  Regards, Neha\" Agent's message: \"Hi Neha,Thanks for checking in (but sorry you had to!) 🙏Your order was 100% sent and I actually thought it would have arrived by now 🤔Can you please confirm if this address is correct?&nbsp;[REDACTED_ADDRESS]"
+  },
+  {
+    "conversationId": "<781d821dad32@example.com>",
+    "customerId": "cust_dd7e4251",
+    "createdAt": "19-Jul-2025 18:09:04",
+    "conversationType": "email",
+    "subject": "Order #NP1384099",
+    "conversation": "Customer's message: \"Hi there,  I just purchased the bite relief patches by mistake, meaning to get the mosquito repellent, would I be able to return them please? My order number is #NP9938917     Emily Chamberlain\" Agent's message: \"Hi Emily,Thanks for reaching out! I noticed you’ve placed another order for the Mosquito Patches for Adults. Instead of a return, we’d be happy to offer you a 10% discount on your Mosquito Patch order via a refund.Would you like us to proceed with that? Just let me know!Agent xx\""
+  },
+  {
+    "conversationId": "<c085e9ba66fa@example.com>",
+    "customerId": "cust_e391ffb1",
+    "createdAt": "19-Jul-2025 18:21:27",
+    "conversationType": "email",
+    "subject": "2 Orders 1 Package #NP1374421",
+    "conversation": "Customer's message: \"I just can't wait to see a mosquito drunk. If its not after snacking on me.  😆\""
+  },
+  {
+    "conversationId": "<84b08c9b2d9a@example.com>",
+    "customerId": "cust_99e2e234",
+    "createdAt": "19-Jul-2025 18:53:39",
+    "conversationType": "email",
+    "subject": "Re: Your order is ready to ship!",
+    "conversation": "Customer's message: \"I have placed the subject order on June 9 and still haven’t received it to date. Can you please update me on the status of the order?   Thanks, Razan   Sent from my iPhone\" Agent's message: \"Hi Razan,I’m really sorry for the delay and for not getting back to you sooner.We ran out of the Kids Tick Repellent Stickers due to an unexpected surge in demand, which caused a delay in fulfilling your whole order. I’m really sorry for not catching this sooner. We just received fresh stock on July 9th, and your order was dispatched the same day from Toronto via Canada Post. Since we don’t include tracking to keep shipping costs low, there isn’t a tracking number available.May you please confirm if this address is correct?6016 Castlegrove CourtMississauga ON L5N 7A8CanadaAdditionally, have you had a chance to check your mailbox or any other delivery spots where the envelope might have been left? If it's not there, I'd be happy to resend your order via Registered Postage for free so we can track or refund if you are no longer interested?Please let me know what I can do to make this right? 🙏Agent xx\" Customer's message: \"Hi Agent - yes the address is correct but It’s alright! I actually received my package a couple of days after sending you the email. Thank you for checking and following up 😁  Razan Sent from my iPhone\" Agent's message: \"Hi there,Thanks for reaching out to NATPAT Support—your note has landed safely in our inbox.Our aim is always to reply the same day, but a few of our follks are currently off recharging and we’re training fresh faces to serve you even better. Because of that, responses are running a little behind (generally within 36–48 hours).We’re quite upset with ourselves that this has happened, but we are racing to get back on track and our promise is that you will be happy once we get to resolve your enquiry.We appreciate your patience and can’t wait to get this sorted for you.Cheers,The NATPAT Support Team\" Agent's message: \"Thanks so much for letting me know you received your patches,&nbsp;RazanI’m really glad they’ve arrived, enjoy trying them out.If you have any questions or need anything else, just give me a shout!Apologies for the delays 🙏Agent xx\""
+  },
+  {
+    "conversationId": "<2ffa4ae38946@example.com>",
+    "customerId": "cust_f25dc227",
+    "createdAt": "19-Jul-2025 18:59:55",
+    "conversationType": "email",
+    "subject": "Re: NATPAT Order #NP1386525 confirmed",
+    "conversation": "Customer's message: \"Hi we are really disappointed to have not received our order… this is an urgent issue as we have Clint’s In need for these items please can you inform us of why we haven’t received the order and at the same time please get the to us   Kind regards  The Richardson family\" Agent's message: \"Hi Adam,Thanks for reaching out and for your patience! I’m really sorry for the delays and the late reply.We ran out of Zen Patch Mood Calming Patches due to unprecedented demand causing a hold-up in fulfilling your whole order within the expected timeframe. I'm so sorry for not checking this early. We just received our fresh stocks on July 14th and your order was dispatched the same day.I checked your order status using the tracking info (https://example.com/mock-link and it shows that your order was delivered on July 21st.Could you please confirm if you have received it? Looking forward to your reply so we can assist you further.Agent xx\""
+  },
+  {
+    "conversationId": "<313bab2dacf8@example.com>",
+    "customerId": "cust_f4e6c077",
+    "createdAt": "19-Jul-2025 19:15:43",
+    "conversationType": "email",
+    "subject": "(no subject)",
+    "conversation": "Customer's message: \"I placed my order #NP4510618 on July 12,2025. My credit card has been charged but my order has not shipped yet. Please check on why my order has not shipped yet and advise.  Thank you.  Pam Griffith  Sent from my iPhone\" Agent's message: \"Hi Pamela,Thanks for reaching out (sorry you had to!)Your order was 100% sent on Jul 12, 2025 and I actually thought it would have arrived by now.Looking on the tracking info https://example.com/mock-link your order is still in-transit status.Fingers crossed you'll have it this week or early next week -I'm really sorry for the delays, it's not the way this is meant to go.Please let me know what I can do to make this right? 🙏More patch power to you,Agent xx\""
+  },
+  {
+    "conversationId": "<b1e583a4e85b@example.com>",
+    "customerId": "cust_09765764",
+    "createdAt": "19-Jul-2025 19:23:23",
+    "conversationType": "email",
+    "subject": "rsJyOiHszjy2Tt7TxbIMka2Ro",
+    "conversation": "Customer's message: \"MessengerAttachments/ccc84273-a2af-483c-baf6-e02c8fd591c5/966ed92c-1aac-4781-a071-14a474f1d48b.jpg\" Agent's message: \"Hi! We’re absolutely thrilled to see that you shared our product on your page—your support means the world to us! We were wondering if it would be possible for us to share your post with our audience as well? Of course, if you’d prefer we didn’t, just let us know and we’ll completely respect your decision.Thanks so much!– Agent 🤗https://example.com/mock-link"
+  },
+  {
+    "conversationId": "<f1a76dc61e63@example.com>",
+    "customerId": "cust_7a78958a",
+    "createdAt": "19-Jul-2025 19:56:28",
+    "conversationType": "email",
+    "subject": "Haven't received order",
+    "conversation": "Customer's message: \"THANKS FOR NO INSTRUCTIONS ON THE PET ZEN!\" Agent's message: \"No worries, ThomasThanks so much! 😊More patch power to you,Agent xx\" Customer's message: \"Thanks for the worthless response!\" Agent's message: \"Hi there,Thanks for reaching out to NATPAT Support—your note has landed safely in our inbox.Our aim is always to reply the same day, but a few of our follks are currently off recharging and we’re training fresh faces to serve you even better. Because of that, responses are running a little behind (generally within 36–48 hours). We’re quite upset with ourselves that this has happened, but we are racing to get back on track and our promise is that you will be happy once we get to resolve your enquiry.We appreciate your patience and can’t wait to get this sorted for you.Cheers,The NATPAT Support Team\" Customer's message: \"So when might I expect my order  Tom Nejman\" Agent's message: \"Hi there,Thanks for reaching out to NATPAT Support—your note has landed safely in our inbox.Our aim is always to reply the same day, but a few of our follks are currently off recharging and we’re training fresh faces to serve you even better. Because of that, responses are running a little behind (generally within 36–48 hours).We’re quite upset with ourselves that this has happened, but we are racing to get back on track and our promise is that you will be happy once we get to resolve your enquiry.We appreciate your patience and can’t wait to get this sorted for you.Cheers,The NATPAT Support Team\" Agent's message: \"Hi Thomas,I’m sorry for any confusion with the responses.Here’s how to use them: Simply take one patch and place it inside the Pet Locket. Then, put the locket on your pet’s collar. This way, your pet can smell the essential oils from the patch, which helps provide a calming effect.For the best results, we recommend changing the patch daily or every 24 hours.Also, your order has been shipped via USPS. However, the USPS we use for free shipping orders is not best and the tracking may not be reliable at times. That said, I can assure you that your order was dispatched from our warehouse in Galena, IL on July 21st and is currently on its way.Some customers have reported delivery times ranging from 9 to 15 days. Fingers crossed you'll have them this coming week or early next weekApologies again for the delay, and thank you for your understanding. 🙏 Kindly,Agent xx\" Customer's message: \"I didn’t order a Pet Locket. Is there some other way I can use the patch?  Could I attach it to his license tag?\" Agent's message: \"Hi there,Thanks for reaching out to NATPAT Support—your note has landed safely in our inbox.Our aim is always to reply the same day, but a few of our follks are currently off recharging and we’re training fresh faces to serve you even better. Because of that, responses are running a little behind (generally within 36–48 hours).We’re quite upset with ourselves that this has happened, but we are racing to get back on track and our promise is that you will be happy once we get to resolve your enquiry.We appreciate your patience and can’t wait to get this sorted for you.Cheers,The NATPAT Support Team\""
+  },
+  {
+    "conversationId": "<3330f68915ad@example.com>",
+    "customerId": "cust_0c958659",
+    "createdAt": "19-Jul-2025 20:12:50",
+    "conversationType": "email",
+    "subject": "Order?",
+    "conversation": "Customer's message: \"Wondering if you could help…I ordered 6/24 and still haven’t received my shipment. Can you tell me when to expect a delivery?\" Agent's message: \"Thanks deedeeand3bugs, I've got this message and will pass it to someone on our team to reply pronto.  🤖 -NATPAT\" Agent's message: \"Hi Dina! Sorry for the late reply. Did you receive your order yet? The tracking for free shipping isn’t always reliable, but your package was sent from our Galena, IL warehouse. If it hasn’t arrived, please check your mailbox just in case. 🙏 If it doesn’t show up this week or early next, we can resend it via registered postage or refund you in full. https://example.com/mock-link \" Customer's message: \"Yeah, it must have been that the shipping info was not accurate. It arrived this afternoon. Thank you!\" Agent's message: \"Thanks deedeeand3bugs, I've got this message and will pass it to someone on our team to reply pronto.  🤖 -NATPAT\" Agent's message: \"Thanks for the update, Dina! So glad your order arrived safely. If you need anything else or have questions, just give me a shout! 😊Agent\""
+  },
+  {
+    "conversationId": "<2de85fbd4e46@example.com>",
+    "customerId": "cust_1c358aa1",
+    "createdAt": "19-Jul-2025 20:14:17",
+    "conversationType": "email",
+    "subject": "New customer message on July 19, 2025 at 5:14 pm",
+    "conversation": "Customer's message: \"Hi, I placeDrew Davis an orDrew Daviser on July 3rDrew Davis anDrew Davis it was scheDrew DavisuleDrew Davis to be Drew DaviselivereDrew Davis by July 11 but I haven’t gotten anything yet. My confirmation number for the orDrew Daviser is #FLITF3VMM  Thanks, Emily Wall\" Agent's message: \"Hi there,Thanks for reaching out to NATPAT Support—your note has lanDrew DaviseDrew Davis safely in our inbox.Our aim is always to reply the same Drew Davisay, but a few of our follks are currently off recharging anDrew Davis we’re training fresh faces to serve you even better. Because of that, responses are running a little behinDrew Davis (generally within 36–48 hours). We’re quite upset with ourselves that this has happeneDrew Davis, but we are racing to get back on track anDrew Davis our promise is that you will be happy once we get to resolve your enquiry.We appreciate your patience anDrew Davis can’t wait to get this sorteDrew Davis for you.Cheers,The NATPAT Support Team\" Agent's message: \"Hi Emily,I apologize for the Drew Daviselay in your orDrew Daviser 🙏The Mosquito Patches were out of stock Drew Davisue to high Drew DavisemanDrew Davis, causing a holDrew Davis-up in fulfilling your orDrew Daviser within the expecteDrew Davis timeframe. Fresh stocks have arriveDrew Davis, anDrew Davis your orDrew Daviser has been Drew DavisispatcheDrew Davis.If you can wait a little longer, I'm happy to give you a 10% Drew Davisiscount or refunDrew Davis once you receive them.Apologies again for the Drew Daviselays.Agent xx\" Customer's message: \"Okay gooDrew Davis to know. No problem, thanks!\" Agent's message: \"Hi there,Thanks for reaching out to NATPAT Support—your note has lanDrew DaviseDrew Davis safely in our inbox.Our aim is always to reply the same Drew Davisay, but a few of our follks are currently off recharging anDrew Davis we’re training fresh faces to serve you even better. Because of that, responses are running a little behinDrew Davis (generally within 36–48 hours). We’re quite upset with ourselves that this has happeneDrew Davis, but we are racing to get back on track anDrew Davis our promise is that you will be happy once we get to resolve your enquiry.We appreciate your patience anDrew Davis can’t wait to get this sorteDrew Davis for you.Cheers,The NATPAT Support Team\" Agent's message: \"Thanks for being so unDrew DaviserstanDrew Davising,&nbsp;EmilyPlease keep me posteDrew Davis 🙏Apologies for the Drew DaviselaysCaz xx\""
+  },
+  {
+    "conversationId": "<b62bc1b0be5d@example.com>",
+    "customerId": "cust_7698a505",
+    "createdAt": "19-Jul-2025 20:15:28",
+    "conversationType": "email",
+    "subject": "Re: Need NATPAT Today? Now Available at Your Local Target",
+    "conversation": "Customer's message: \"I received an email my order was ready to ship last Tuesday.  An email said it should arrive by the 19th. I keep checking the tracking number and it says USPS is still waiting for the package.   I know sometimes that isn’t the case and it sometimes doesn’t update.  Can you tell me if this has already been shipped?  The email told me it would be hear by today - which I was planning to take them on a trip Monday, but as of now that doesn’t look like it will happen.  Thank you for checking on this for me. Order number NP6649710  Rebecca Rice Sent from my iPhone\" Agent's message: \"Hi Rebecca,Thanks for reaching out (sorry you had to!)Your order was 100% sent on Jul 12, 2025 and I actually thought it would have arrived by now.Looking on the tracking info https://example.com/mock-link your order is still in-transit status.Fingers crossed you'll have it this week or early next week -I'm really sorry for the delays, it's not the way this is meant to go.Please let me know what I can do to make this right? 🙏More patch power to you,Agent xx\" Customer's message: \"I wanted to share that my package just arrived in Illinois!!!  I was told by the 19th - then this says by today.  But I live in Texas!! I ordered on the 11th. Is this the normal shipping time when you offer free shipping?  Mailing label created on the 15th and I was told that is the day it went out and it just got to Chicago.   Sent from my iPhone\" Agent's message: \"Hi there,Thanks for reaching out to NATPAT Support—your note has landed safely in our inbox.Our aim is always to reply the same day, but a few of our follks are currently off recharging and we’re training fresh faces to serve you even better. Because of that, responses are running a little behind (generally within 36–48 hours).We’re quite upset with ourselves that this has happened, but we are racing to get back on track and our promise is that you will be happy once we get to resolve your enquiry.We appreciate your patience and can’t wait to get this sorted for you.Cheers,The NATPAT Support Team\" Agent's message: \"So sorry for the delays and inconvenience, Rebecca&nbsp;🙏 Upon checking, your order will arrive later than expected, but is still on its way. As of July 29, 2025 at 2:54 am, it is currently in transit to the next facility. Here's the tracking link to check: https://example.com/mock-link you please confirm if this address is correct?&nbsp;[REDACTED_ADDRESS]"
+  },
+  {
+    "conversationId": "<cfebba0f98f0@example.com>",
+    "customerId": "cust_3caf8022",
+    "createdAt": "19-Jul-2025 20:19:52",
+    "conversationType": "email",
+    "subject": "Order #NP1378363",
+    "conversation": "Customer's message: \"Please can you confirm the locket has been dispatched?\" Customer's message: \"I still haven't yet received my locket. You offered to send one out to me last week.  Many thanks\" Agent's message: \"Hi there,Thanks for reaching out to NATPAT Support—your note has landed safely in our inbox.Our aim is always to reply the same day, but a few of our follks are currently off recharging and we’re training fresh faces to serve you even better. Because of that, responses are running a little behind (generally within 36–48 hours). We’re quite upset with ourselves that this has happened, but we are racing to get back on track and our promise is that you will be happy once we get to resolve your enquiry.We appreciate your patience and can’t wait to get this sorted for you.Cheers,The NATPAT Support Team\" Agent's message: \"Hi Cas, I’m really sorry for the delay in getting back to you. We’ll be sending your free Pet Locket first thing tomorrow. If there’s anything else you need or any questions come up, just let me know!Agent xx\" Customer's message: \"Thankyou so much! 🙂\" Agent's message: \"No worries, CasCaz 🙏 \" Agent's message: \"Hi there,Thanks for reaching out to NATPAT Support—your note has landed safely in our inbox.Our aim is always to reply the same day, but a few of our follks are currently off recharging and we’re training fresh faces to serve you even better. Because of that, responses are running a little behind (generally within 36–48 hours). We’re quite upset with ourselves that this has happened, but we are racing to get back on track and our promise is that you will be happy once we get to resolve your enquiry.We appreciate your patience and can’t wait to get this sorted for you.Cheers,The NATPAT Support Team\""
+  },
+  {
+    "conversationId": "<aebcb2d12d15@example.com>",
+    "customerId": "cust_0c5822c0",
+    "createdAt": "19-Jul-2025 20:33:43",
+    "conversationType": "email",
+    "subject": "Re: NATPAT Order #NP1386426 confirmed",
+    "conversation": "Customer's message: \"Plus, Shop 40% Off Winter Favourites.  Email not displaying correctly?  View it as a web page                             &#xA0;&#xA0;&#xA0;   NEW IN     WOMEN     CURVE     MEN     BRANDS     SALE            WOMENS   CURVE   MENS           Add $59 jeans to cart before it's too late. Hurry, must end tonight!                     WOMENS   CURVE   MENS  ****************************************  Plus, Shop Best Of Winter!            WOMENS   CURVE   MENS   KIDS        Find A Store     Delivery     Returns &amp; Exchanges     Contact Us  40% off winter favourites is available on selected full price Just Jeans styles. Cannot be used in conjunction with any other offer. Offer available in store & online. Offer available for a limited time.  $59 jeans is valid on selected full price Just Jeans styles. Cannot be used in conjunction with any other offer. Offer available in store & online. Offer valid until 11:59pm AEST Sunday 20th July 2025.  If you no longer wish to receive promotional emails from Just Jeans  click here to unsubscribe This email was sent by: Just Group Ltd [REDACTED_ADDRESS]"
+  },
+  {
+    "conversationId": "<6a4b97e5b329@example.com>",
+    "customerId": "cust_9a25e72a",
+    "createdAt": "19-Jul-2025 20:43:07",
+    "conversationType": "email",
+    "subject": "Re: NATPAT Order #NP1367371 confirmed",
+    "conversation": "Customer's message: \"I use these!!!\" Agent's message: \"Love that! Thanks for sticking with us! 👍\""
+  },
+  {
+    "conversationId": "<46f92f8d05f6@example.com>",
+    "customerId": "cust_4a7574a4",
+    "createdAt": "19-Jul-2025 21:01:02",
+    "conversationType": "email",
+    "subject": "Re: Your order has been delivered!",
+    "conversation": "Customer's message: \"The angry reacts must be from other people who haven’t received their orders or responses from you on said orders..?\" Agent's message: \"Hi Keyla, we're truly sorry for any delays and are doing our best to respond to everyone as quickly as possible. We really appreciate your patience. How can we assist you today?\""
+  },
+  {
+    "conversationId": "<2894d20391e4@example.com>",
+    "customerId": "cust_ec4d6ae7",
+    "createdAt": "19-Jul-2025 21:03:10",
+    "conversationType": "email",
+    "subject": "Re: NATPAT Order #NP1386572 confirmed",
+    "conversation": "Customer's message: \"Hi. I didn't receive my order. Shirley\" Agent's message: \"Hi Shirley,Thanks for checking in (but sorry you had to!) 🙏Your order was 100% sent and I actually thought it would have arrived by now 🤔Can you please confirm if this address is correct?&nbsp;[REDACTED_ADDRESS]"
+  },
+  {
+    "conversationId": "<0e8e93db58c8@example.com>",
+    "customerId": "cust_be9f49b9",
+    "createdAt": "19-Jul-2025 21:16:13",
+    "conversationType": "email",
+    "subject": "Re: NATPAT Order #NP1386574 confirmed",
+    "conversation": "Customer's message: \"Please can you advise me when I’m likely to receive this order? No further details for tracking available on the Shop app. We are away from the 24th July and I placed the order on the 9th July.   Lisa Sent from my iPhone\" Agent's message: \"Hi Lisa,Thanks for reaching out (sorry you had to!)Your order was 100% sent on Jul 9, 2025 and I actually thought it would have arrived by now.Looking on the tracking info https://example.com/mock-link your order is still in-transit status.Fingers crossed you'll have it this week or early next week -I'm really sorry for the delays, it's not the way this is meant to go.Please let me know what I can do to make this right? 🙏More patch power to you,Agent xx\" Customer's message: \"Wow, what a swift and caring response. I’m impressed! Hopefully the patches arrive Monday/tuesday this week coming. If it doesn’t though can I contact again and get a refund on delivery cost or another package sent out?  Kindest regards,  Lisa Sent from my iPhone\" Agent's message: \"Hi there,Thanks for reaching out to NATPAT Support—your note has landed safely in our inbox.Our aim is always to reply the same day, but a few of our follks are currently off recharging and we’re training fresh faces to serve you even better. Because of that, responses are running a little behind (generally within 36–48 hours). We’re quite upset with ourselves that this has happened, but we are racing to get back on track and our promise is that you will be happy once we get to resolve your enquiry.We appreciate your patience and can’t wait to get this sorted for you.Cheers,The NATPAT Support Team\" Agent's message: \"Thanks for being so understanding,&nbsp;LisaPlease keep me posted 🙏Apologies for the delaysCaz xx\""
+  },
+  {
+    "conversationId": "<3216d1e64255@example.com>",
+    "customerId": "cust_f9a51e75",
+    "createdAt": "19-Jul-2025 21:34:46",
+    "conversationType": "email",
+    "subject": "Order# NP1377958",
+    "conversation": "Customer's message: \"Dear NATPAT,  Joseph Kreizinger wants to connect with you for the order below:   Customer Order Number:  +15023156350  Purchase Order No:  +13261856066  Reason for Contact:  Where is my order  Item name/number:  NATPAT Magic Patch Itch Relief Patches - 32 Patches - Chemical Free, Natural Itch Relief - Bug Bite Relief for Mosquitos, Ticks, Midges, Sandflies/+18056028363  Customer Message:  Can you update me on my order?  What you need to do now: 1. Reply to this message to contact the customer, and do so within 48 hours, per the guidelines outlined in the  Marketplace Seller Customer Care Requirements. 2. If there has been no reply to this communication within 48 hours, Walmart may proactively refund the customer.  Thank you, Your Walmart Customer Care Team  \""
+  },
+  {
+    "conversationId": "<b74176a91257@example.com>",
+    "customerId": "cust_6132baac",
+    "createdAt": "19-Jul-2025 21:37:06",
+    "conversationType": "email",
+    "subject": "Re: NATPAT Order #NP1386553 confirmed",
+    "conversation": "Customer's message: \"MessengerAttachments/cc4df462-b3e4-41b7-aec8-6110abee155b/1f933bfb-f749-441d-9e4b-98be0e7ee3e6.mp4\" Customer's message: \"MessengerAttachments/2aa81364-d17d-476b-baad-8af9fce6d953/5fc206cb-d14f-4ef7-9032-e4ce3b72a4d8.mp4\" Agent's message: \"MessengerAttachments/c5b02192-e939-488b-9600-754fbeed606b/16654e2d-4200-4023-94f4-8e5917239fc2.mp4\" Customer's message: \"MessengerAttachments/c13c936a-6cdd-415e-ab96-fa3f09aed473/dcf8f306-7abc-4f63-963a-32b46e9a0384.mp4\" Agent's message: \"MessengerAttachments/ea79b6b4-08e5-4700-9276-1cc68c5f58d8/5a83109f-4abc-4093-b631-bb69a62cf216.mp4\" Agent's message: \"Hi! We’re absolutely thrilled to see that you shared our product on your page—your support means the world to us! We were wondering if it would be possible for us to share your post with our audience as well? Of course, if you’d prefer we didn’t, just let us know and we’ll completely respect your decision.  Thanks so much! – Agent 🤗 https://example.com/mock-link Agent's message: \"Hi! We’re absolutely thrilled to see that you shared our product on your page—your support means the world to us! We were wondering if it would be possible for us to share your post with our audience as well? Of course, if you’d prefer we didn’t, just let us know and we’ll completely respect your decision.  Thanks so much! – Agent 🤗 https://example.com/mock-link Agent's message: \"Hi! We’re absolutely thrilled to see that you shared our product on your page—your support means the world to us! We were wondering if it would be possible for us to share your post with our audience as well? Of course, if you’d prefer we didn’t, just let us know and we’ll completely respect your decision.  Thanks so much! – Agent 🤗 https://example.com/mock-link"
+  },
+  {
+    "conversationId": "<671565ef91fd@example.com>",
+    "customerId": "cust_b13f99e1",
+    "createdAt": "19-Jul-2025 21:41:29",
+    "conversationType": "email",
+    "subject": "Fwd: NATPAT Order #NP1381451 confirmed",
+    "conversation": "Customer's message: \"So awesome, but when seen on babies, I worry that they may peel them off and put them in their mouth so that they become a choking hazard.  I would think it’s safest to put the stickers on their backs.\" Agent's message: \"Great point! We recommend patches on backs for little ones.\""
+  },
+  {
+    "conversationId": "<eb44ca4679c2@example.com>",
+    "customerId": "cust_7e3467d8",
+    "createdAt": "19-Jul-2025 22:01:43",
+    "conversationType": "email",
+    "subject": "Re: NATPAT Order #NP1386223 confirmed",
+    "conversation": "Customer's message: \"I’ve just tried to order from New Zealand  But the system will not accept my Apple Pay card  Says it needs a province We have no provinces!  Please advise   Sonia Cushing  Sent from my iPhone\" Customer's message: \"Just sent email  But tried again And all sorted!  Thank you  Sent from my iPhone\" Agent's message: \"Hi there,Thanks for reaching out to NATPAT Support—your note has landed safely in our inbox.Our aim is always to reply the same day, but a few of our follks are currently off recharging and we’re training fresh faces to serve you even better. Because of that, responses are running a little behind (generally within 36–48 hours). We’re quite upset with ourselves that this has happened, but we are racing to get back on track and our promise is that you will be happy once we get to resolve your enquiry.We appreciate your patience and can’t wait to get this sorted for you.Cheers,The NATPAT Support Team\" Agent's message: \"Hi Sonia,Thanks so much for the update! I’m really glad to hear you were able to get everything sorted with your order. Here's also the tracking link you can check for further updates: https://example.com/mock-link You can expect your order to arrive between Wednesday, Jul 30, 2025 - Tuesday, Aug 5, 2025.If you have any other questions or need help with anything else, just give me a shout!Agent xx\""
+  },
+  {
+    "conversationId": "<e22785059091@example.com>",
+    "customerId": "cust_bab32a2c",
+    "createdAt": "19-Jul-2025 22:28:34",
+    "conversationType": "email",
+    "subject": "refund?",
+    "conversation": "Customer's message: \"My order never arrived !! Sent from my iPhone\" Customer's message: \"Thank you Lucy. I never received my first order of the child mosquito repellent, just receiving those would be wonderful! It was the three pack. Sent from my iPhone\" Agent's message: \"Hi there,Thanks for reaching out to NATPAT Support—your note has landed safely in our inbox.Our aim is always to reply the same day, but a few of our follks are currently off recharging and we’re training fresh faces to serve you even better. Because of that, responses are running a little behind (generally within 36–48 hours). We’re quite upset with ourselves that this has happened, but we are racing to get back on track and our promise is that you will be happy once we get to resolve your enquiry.We appreciate your patience and can’t wait to get this sorted for you.Cheers,The NATPAT Support Team\" Agent's message: \"Hi Luoise,Thanks for checking in (but sorry you had to!) 🙏Your order was 100% sent and I actually thought it would have arrived by now 🤔Can you please confirm if this address is correct?&nbsp;[REDACTED_ADDRESS]"
+  },
+  {
+    "conversationId": "<1fa892a9680d@example.com>",
+    "customerId": "cust_a78518a9",
+    "createdAt": "19-Jul-2025 22:55:03",
+    "conversationType": "email",
+    "subject": "Original order",
+    "conversation": "Customer's message: \"  The below products have expired and are in the Quarantine store.   Client: NATPAT   Product Code  Expiry Date  Batch Ref  Quantity  Bin  ABP001  2025-06-30  TRABP40002  54  ND27  STP001  2025-05-23  TRSP24006  876  ND21  ZP001  2025-06-30  TRZP24007  629  ND46    \" Customer's message: \"  The below products have stock which will expire soon.  Client: Soccer Supplement Ltd   Code  Description  Expiry Date  Batch Ref  Quantity  STP001  StuffyPatch - Congestion Relief Patch - 1 Pack  2025-07-31  TRSP24004  2688  ZP001  ZenPatch Mood Calming Stickers - 1 Pack  2025-08-31  TRZP24008  184  STP001  StuffyPatch - Congestion Relief Patch - 1 Pack  2025-09-30  TRSP24004  3953   &#xA0;    \" Customer's message: \"  The below products have stock which will expire soon.  Client: NATPAT   Code  Description  Expiry Date  Batch Ref  Quantity  STP001  StuffyPatch - Congestion Relief Patch - 1 Pack  2025-07-31  TRSP24004  2688  ZP001  ZenPatch Mood Calming Stickers - 1 Pack  2025-08-31  TRZP24008  184  STP001  StuffyPatch - Congestion Relief Patch - 1 Pack  2025-09-30  TRSP24004  3953   &#xA0;    \" Agent's message: \"Hi there,Thanks for reaching out to NATPAT Support—your note has landed safely in our inbox.Our aim is always to reply the same day, but a few of our follks are currently off recharging and we’re training fresh faces to serve you even better. Because of that, responses are running a little behind (generally within 36–48 hours). We’re quite upset with ourselves that this has happened, but we are racing to get back on track and our promise is that you will be happy once we get to resolve your enquiry.We appreciate your patience and can’t wait to get this sorted for you.Cheers,The NATPAT Support Team\""
+  },
+  {
+    "conversationId": "<d6ca167bd906@example.com>",
+    "customerId": "cust_f27142b5",
+    "createdAt": "19-Jul-2025 22:55:32",
+    "conversationType": "email",
+    "subject": "Order status",
+    "conversation": "Customer's message: \"Hi I made an order on the 14th of this month. Order number is NP8073419, and I’m yet to receive a confirmation email or message regarding this order. Kindly let me know when to get the confirmation and my order. Thanks\" Agent's message: \"Hi Portia,Apologies for the delays 😞I checked your order, and it has already been delivered. Here's the link to check:&nbsp;https://example.com/mock-link May you please confirm if this address is correct?&nbsp;[REDACTED_ADDRESS]"
+  },
+  {
+    "conversationId": "<f61b2d9682b2@example.com>",
+    "customerId": "cust_4f5afca9",
+    "createdAt": "19-Jul-2025 23:41:54",
+    "conversationType": "email",
+    "subject": "Plz cancel my subscription",
+    "conversation": "Customer's message: \"Hello,  While I've received the order of buzz patches I have not received the Sleepy patches yet.  The tracking shows delivered and checked with the neighbors but nothing came up.\" Agent's message: \"Hi Jose,Apologies for the delays 😞I checked your order, and it has already been delivered. Here's the link to check:&nbsp;https://example.com/mock-link May you please confirm if this address is correct?&nbsp;[REDACTED_ADDRESS]"
+  },
+  {
+    "conversationId": "<ac7487303389@example.com>",
+    "customerId": "cust_52858ba6",
+    "createdAt": "19-Jul-2025 23:48:33",
+    "conversationType": "email",
+    "subject": "New customer message on July 19, 2025 at 8:48 pm",
+    "conversation": "Agent's message: \"Get your kid's \"\"bug armor\"\" for bite-free adventures! Find us at Target (US), Woolies/CWH (AU), or tap the link in bio! 🌟\""
+  },
+  {
+    "conversationId": "<0b18eaebca95@example.com>",
+    "customerId": "cust_c8f25440",
+    "createdAt": "19-Jul-2025 23:53:29",
+    "conversationType": "email",
+    "subject": "Re: NATPAT Order #NP1386638 confirmed",
+    "conversation": "Customer's message: \"Does not work\""
+  },
+  {
+    "conversationId": "<3c8c0ca012c8@example.com>",
+    "customerId": "cust_fb7b451f",
+    "createdAt": "19-Jul-2025 23:58:54",
+    "conversationType": "email",
+    "subject": "Order number Np1376061",
+    "conversation": "Customer's message: \"I don't need any stickers for children, only needed for adults.  Please advise.  😊\" Customer's message: \"Why are there patches for kids on my order please?  I don't have any kids at all anywhere, can you please fix?  Thx much!  Tanya\" Agent's message: \"Hi there,Thanks for reaching out to NATPAT Support—your note has landed safely in our inbox.Our aim is always to reply the same day, but a few of our follks are currently off recharging and we’re training fresh faces to serve you even better. Because of that, responses are running a little behind (generally within 36–48 hours). We’re quite upset with ourselves that this has happened, but we are racing to get back on track and our promise is that you will be happy once we get to resolve your enquiry.We appreciate your patience and can’t wait to get this sorted for you.Cheers,The NATPAT Support Team\" Customer's message: \"Ok thank u!  I had placed an order for just myself and now there are two orders coming and it is double the price, so just wondering why, thanks again!\" Agent's message: \"Hi there,Thanks for reaching out to NATPAT Support—your note has landed safely in our inbox.Our aim is always to reply the same day, but a few of our follks are currently off recharging and we’re training fresh faces to serve you even better. Because of that, responses are running a little behind (generally within 36–48 hours). We’re quite upset with ourselves that this has happened, but we are racing to get back on track and our promise is that you will be happy once we get to resolve your enquiry.We appreciate your patience and can’t wait to get this sorted for you.Cheers,The NATPAT Support Team\" Customer's message: \"Well July 17 has come and gone and I still don't even know why my order was \"\"updated\"\" or how.  I only wanted to TRY the mosquito patches for adults.  Can anyone update me as to what's arriving and when?  And what the cost was?  Thank you so much!  Tanya. 😊\" Agent's message: \"Hi there,Thanks for reaching out to NATPAT Support—your note has landed safely in our inbox.Our aim is always to reply the same day, but a few of our follks are currently off recharging and we’re training fresh faces to serve you even better. Because of that, responses are running a little behind (generally within 36–48 hours). We’re quite upset with ourselves that this has happened, but we are racing to get back on track and our promise is that you will be happy once we get to resolve your enquiry.We appreciate your patience and can’t wait to get this sorted for you.Cheers,The NATPAT Support Team\" Agent's message: \"Hi Tanya,Thanks for reaching out (sorry you had to!).Based on your order details, you have successfully ordered 4 packs of MosquitoPatch for Adults and Exclusive Offer buy 2 get 2 free of MosquitoPatch for Kids as an add on.Since we work fast here in The Natural Patch Co. (all orders are dispatched on the same day), I can see that your order was dispatched already and we're no longer allowed to process any cancellation.I hope you're okay with 30% refund to the packs under&nbsp;Exclusive&nbsp;Offer and keep all the patches, please? Otherwise, you may have to return the other 4 packs of MosquitoPatch for Kids to our warehouse in IL when they arrive to refund you accordingly.Please let me know your preference, totally fine whichever is best for you.🙏Agent xx\" Customer's message: \"Thank you sooo much for helping!  30% back is very kind, thank you for that! Tanya\" Agent's message: \"Hi there,Thanks for reaching out to NATPAT Support—your note has landed safely in our inbox.Our aim is always to reply the same day, but a few of our follks are currently off recharging and we’re training fresh faces to serve you even better. Because of that, responses are running a little behind (generally within 36–48 hours).We’re quite upset with ourselves that this has happened, but we are racing to get back on track and our promise is that you will be happy once we get to resolve your enquiry.We appreciate your patience and can’t wait to get this sorted for you.Cheers,The NATPAT Support Team\""
+  },
+  {
+    "conversationId": "<1c98c52d85af@example.com>",
+    "customerId": "cust_448e8bea",
+    "createdAt": "20-Jul-2025 00:39:07",
+    "conversationType": "email",
+    "subject": "Shipping",
+    "conversation": "Customer's message: \"Markle Jen my son is a magnet for bugs. So he get 3 stickers on his little body , they work great\" Agent's message: \"Hi Victoria! That’s awesome to hear the stickers are working so well for you guys 😊 \""
+  },
+  {
+    "conversationId": "<1bdc0353b865@example.com>",
+    "customerId": "cust_0f32a74a",
+    "createdAt": "20-Jul-2025 01:28:49",
+    "conversationType": "email",
+    "subject": "Order",
+    "conversation": "Customer's message: \"Patch Power  Sent from Yahoo Mail for iPhone\" Agent's message: \"Thanks so much, Sarah 😊 More patch power to you,Agent xx\" Customer's message: \"Hi there, Just want to know how I can track my order. Thank you.  Sent from Yahoo Mail for iPhone\" Agent's message: \"Hi there,Thanks for reaching out to NATPAT Support—your note has landed safely in our inbox.Our aim is always to reply the same day, but a few of our follks are currently off recharging and we’re training fresh faces to serve you even better. Because of that, responses are running a little behind (generally within 36–48 hours).We’re quite upset with ourselves that this has happened, but we are racing to get back on track and our promise is that you will be happy once we get to resolve your enquiry.We appreciate your patience and can’t wait to get this sorted for you.Cheers,The NATPAT Support Team\" Agent's message: \"Thanks for reaching out (sorry you had to!) 🙏We reached out to our courier to know the status of the shipment, rest assured that your order was dispatched and I actually thought it would have arrived by now 🤔CP admitted things are taking longer even for regular mail and said in some situations it's taken 15 days for a letter to get to the destination 😦Fingers crossed you'll have them ASAP!Please keep us poted.More patch power to you,Agent xx\""
+  }
+]

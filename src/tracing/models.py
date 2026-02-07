@@ -5,14 +5,14 @@ Provides structured observability for every agent decision.
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 from pydantic import BaseModel, Field
 
 
 class TraceEntry(BaseModel):
-    timestamp: str = Field(default_factory=lambda: datetime.utcnow().isoformat())
+    timestamp: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     agent: str = ""
     action_type: str = ""  # guardrail_check, classification, routing, react_thought, tool_call, response, reflection, revision, escalation, handoff, intent_shift
     detail: str = ""
@@ -27,7 +27,7 @@ class SessionTrace(BaseModel):
     session_id: str = ""
     customer_email: str = ""
     customer_name: str = ""
-    started_at: str = Field(default_factory=lambda: datetime.utcnow().isoformat())
+    started_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     intent: Optional[str] = None
     intent_confidence: Optional[int] = None
     traces: list[TraceEntry] = Field(default_factory=list)

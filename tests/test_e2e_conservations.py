@@ -15,6 +15,7 @@ For CI without LLM, set MOCK_LLM=1 env var.
 import json
 import os
 import pytest
+import pytest_asyncio
 import asyncio
 from typing import Optional
 
@@ -592,19 +593,29 @@ class TestInputGuardrailsE2E:
 # FIXTURES — Setup async HTTP client
 # ═══════════════════════════════════════════════════════════════════════════════
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def async_client():
     """Create an async HTTP test client for the FastAPI app."""
     try:
         import httpx
         from src.main import app
 
-        async with httpx.AsyncClient(
-            transport=httpx.ASGITransport(app=app),
-            base_url="http://test",
-            timeout=60.0,
-        ) as client:
-            yield client
+        mock_api_url = os.getenv("MOCK_API_URL", os.getenv("API_URL", "http://localhost:8080"))
+        try:
+            async with httpx.AsyncClient(timeout=3.0) as hc:
+                health = await hc.get(f"{mock_api_url}/health")
+            if health.status_code != 200:
+                pytest.skip(f"Mock API is not healthy at {mock_api_url}")
+        except Exception:
+            pytest.skip(f"Mock API is not reachable at {mock_api_url}")
+
+        async with app.router.lifespan_context(app):
+            async with httpx.AsyncClient(
+                transport=httpx.ASGITransport(app=app),
+                base_url="http://test",
+                timeout=60.0,
+            ) as client:
+                yield client
     except ImportError:
         pytest.skip("httpx not installed for async testing")
 
@@ -613,7 +624,7 @@ async def async_client():
 # CONFTEST ALTERNATIVE — If using a running server
 # ═══════════════════════════════════════════════════════════════════════════════
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def live_client():
     """Client for testing against a live running server."""
     import httpx

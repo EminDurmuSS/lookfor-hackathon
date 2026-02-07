@@ -88,6 +88,11 @@ async def _run_react_agent(
     reasoning = []
     running_state = dict(state or {})
     running_state["tool_calls_log"] = tool_calls_log
+    current_turn_index = sum(
+        1 for m in state.get("messages", [])
+        if hasattr(m, "type") and m.type == "human"
+    )
+    running_state["current_turn_index"] = max(1, current_turn_index)
 
     state_updates = {
         "current_order_id": state.get("current_order_id"),
@@ -154,6 +159,7 @@ async def _run_react_agent(
                 "tool_name": tool_name,
                 "params": corrected_args,
                 "result": tool_result if isinstance(tool_result, dict) else str(tool_result),
+                "turn_index": running_state["current_turn_index"],
             }
             tool_calls_log.append(log_entry)
             running_state["tool_calls_log"] = tool_calls_log

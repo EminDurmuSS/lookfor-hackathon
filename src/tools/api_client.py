@@ -24,10 +24,10 @@ def _get_async_client() -> httpx.AsyncClient:
 
 async def api_call_async(endpoint: str, payload: dict) -> dict:
     """
-    Async POST to ``{API_URL}/hackhaton/{endpoint}`` with one automatic retry.
+    Async POST to ``{API_URL}/hackathon/{endpoint}`` with one automatic retry.
     Preferred method for use in async agent nodes.
     """
-    url = f"{API_URL}/hackhaton/{endpoint}"
+    url = f"{API_URL}/hackathon/{endpoint}"
     headers = {"Content-Type": "application/json"}
     client = _get_async_client()
 
@@ -50,10 +50,10 @@ async def api_call_async(endpoint: str, payload: dict) -> dict:
 
 def api_call(endpoint: str, payload: dict) -> dict:
     """
-    Sync POST to ``{API_URL}/hackhaton/{endpoint}`` with one automatic retry.
+    Sync POST to ``{API_URL}/hackathon/{endpoint}`` with one automatic retry.
     Fallback for sync contexts. For async, use api_call_async instead.
     """
-    url = f"{API_URL}/hackhaton/{endpoint}"
+    url = f"{API_URL}/hackathon/{endpoint}"
     headers = {"Content-Type": "application/json"}
 
     for attempt in range(2):

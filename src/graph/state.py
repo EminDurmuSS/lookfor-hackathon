@@ -53,7 +53,10 @@ class CustomerSupportState(TypedDict, total=False):
     flag_escalation_risk: bool  # aggressive language
     flag_chargeback_threat: bool  # chargeback / dispute threat
     flag_health_concern: bool  # health / allergy mention
+    flag_entire_order_wrong: bool  # deterministic reship trigger
+    flag_reship_acceptance: bool  # deterministic reship trigger (offer accepted)
     is_handoff: bool  # agent requested cross-agent handoff
+    is_escalation: bool  # control command for escalation handler
     handoff_target: Optional[str]
     handoff_count_this_turn: int
 
@@ -73,5 +76,6 @@ class CustomerSupportState(TypedDict, total=False):
 
     # ── Tracing / Observability ──────────────────────────────────────────────
     tool_calls_log: list[dict]
+    current_turn_index: int
     actions_taken: list[str]
     agent_reasoning: Annotated[list[str], lambda a, b: (a or []) + (b or [])]

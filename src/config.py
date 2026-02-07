@@ -25,10 +25,10 @@ def _load_dotenv_if_available() -> None:
 
 _load_dotenv_if_available()
 
-
+    
 # ── Environment ──────────────────────────────────────────────────────────────
 ANTHROPIC_API_KEY: str = os.getenv("ANTHROPIC_API_KEY", "")
-API_URL: str = os.getenv("API_URL", "http://localhost:8080")
+API_URL: str = os.getenv("API_URL", "https://lookfor-backend.ngrok.app/v1/api")
 APP_TIMEZONE: str = os.getenv("APP_TIMEZONE", "UTC")
 
 

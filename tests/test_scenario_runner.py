@@ -162,10 +162,43 @@ def clear_mock_overrides() -> bool:
         return False
 
 
-def set_mock_time_for_day(day_name: str) -> bool:
-    """Set mock API time for test_day scenarios."""
+def set_mock_time_for_day(day_name: str) -> tuple[bool, Optional[dict]]:
+    """Set mock API time for test_day scenarios and return payload."""
     try:
         r = client.post(f"{MOCK_API_URL}/admin/set_time", json={"day": day_name})
+        if r.status_code != 200:
+            return False, None
+        payload = r.json()
+        return bool(payload.get("success", True)), payload
+    except Exception:
+        return False, None
+
+
+def _wait_promise_for_day(day_name: str) -> str:
+    """Mirror src.config wait-promise logic for deterministic scenario runs."""
+    if day_name in {"Monday", "Tuesday", "Wednesday"}:
+        return "this Friday"
+    return "early next week"
+
+
+def set_app_time_override(date_str: str, day_name: str) -> bool:
+    """Sync app-side date context with mock API date context."""
+    try:
+        body = {
+            "date": date_str,
+            "day_of_week": day_name,
+            "wait_promise": _wait_promise_for_day(day_name),
+        }
+        r = client.post(f"{APP_URL}/debug/set-time", json=body)
+        return r.status_code == 200
+    except Exception:
+        return False
+
+
+def clear_app_time_override() -> bool:
+    """Clear app-side date override to avoid cross-scenario leakage."""
+    try:
+        r = client.post(f"{APP_URL}/debug/clear-time")
         return r.status_code == 200
     except Exception:
         return False
@@ -669,11 +702,22 @@ def run_scenario(logger: DualLogger, sc: dict, index: int, total: int) -> dict:
     try:
         # Configure test_day FIRST (this triggers a reset with recalculated dates)
         if sc.get("test_day"):
-            day_ok = set_mock_time_for_day(sc["test_day"])
+            day_ok, payload = set_mock_time_for_day(sc["test_day"])
             logger.log(f"    [Mock time → {sc['test_day']}: {'OK' if day_ok else 'FAILED'}]")
+            if day_ok and isinstance(payload, dict):
+                mock_day = str(payload.get("day") or sc["test_day"])
+                new_now = str(payload.get("new_now") or "")
+                date_str = new_now.split("T")[0] if "T" in new_now else new_now
+                if date_str:
+                    app_sync_ok = set_app_time_override(date_str, mock_day)
+                    logger.log(
+                        f"    [App time sync -> {mock_day} {date_str}: {'OK' if app_sync_ok else 'FAILED'}]"
+                    )
         elif RESET_BETWEEN:
             ok = reset_mock_api()
             logger.log(f"    [Mock API state reset: {'OK' if ok else 'FAILED'}]")
+            app_clear_ok = clear_app_time_override()
+            logger.log(f"    [App time clear: {'OK' if app_clear_ok else 'FAILED'}]")
 
         # Inject mock_tool_responses if specified
         if sc.get("mock_tool_responses"):
@@ -786,6 +830,8 @@ def run_scenario(logger: DualLogger, sc: dict, index: int, total: int) -> dict:
     finally:
         # Always clear mock overrides to prevent cross-scenario contamination
         clear_mock_overrides()
+        # Always clear app-side time override to avoid leakage.
+        clear_app_time_override()
 
     result["duration_s"] = round(time.time() - start_time, 2)
     status = "✅ PASSED" if result["passed"] else "❌ FAILED"
