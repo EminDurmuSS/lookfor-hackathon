@@ -196,16 +196,16 @@ flowchart TD
 
 ### Layer Summary
 
-| Layer | Name                  | Purpose                                                      | Model Used   |
-| ----- | --------------------- | ------------------------------------------------------------ | ------------ |
-| **0** | Escalation Lock       | Prevents further processing if session is already escalated  | None         |
-| **1** | Input Guardrails      | PII redaction, injection detection, health/chargeback flags  | None (regex) |
-| **2** | Intent Classification | Classifies customer intent + detects mid-conversation shifts | Haiku        |
-| **3** | ReAct Agents          | Domain-specific reasoning, tool calling, response generation | Sonnet       |
-| **4** | Tool Call Guardrails  | Validates parameters, enforces limits, prevents duplicates   | None (code)  |
-| **5** | Output Guardrails     | Checks for forbidden phrases, persona, internal leaks        | None (regex) |
-| **6** | Reflection Validator  | 8-rule quality check on final response                       | Haiku        |
-| **7** | Revision              | Rewrites response to fix identified quality issues           | Sonnet       |
+| Layer | Name | Purpose | Model Used |
+|-------|------|---------|------------|
+| **0** | Escalation Lock | Prevents further processing if session is already escalated | None |
+| **1** | Input Guardrails | PII redaction, injection detection, health/chargeback flags | None (regex) |
+| **2** | Intent Classification | Classifies customer intent + detects mid-conversation shifts | Haiku |
+| **3** | ReAct Agents | Domain-specific reasoning, tool calling, response generation | Sonnet |
+| **4** | Tool Call Guardrails | Validates parameters, enforces limits, prevents duplicates | None (code) |
+| **5** | Output Guardrails | Checks for forbidden phrases, persona, internal leaks | None (regex) |
+| **6** | Reflection Validator | 8-rule quality check on final response | Haiku |
+| **7** | Revision | Rewrites response to fix identified quality issues | Sonnet |
 
 ---
 
@@ -230,17 +230,17 @@ flowchart LR
 
 **Supported Intent Categories:**
 
-| Intent          | Agent         | Description                                |
-| --------------- | ------------- | ------------------------------------------ |
-| `WISMO`         | wismo_agent   | Shipping delays, tracking, delivery status |
-| `WRONG_MISSING` | issue_agent   | Wrong/missing items in package             |
-| `NO_EFFECT`     | issue_agent   | Product not working, no results            |
-| `REFUND`        | issue_agent   | Refund requests, money back                |
-| `ORDER_MODIFY`  | account_agent | Cancel order, change address               |
-| `SUBSCRIPTION`  | account_agent | Subscription management, billing           |
-| `DISCOUNT`      | account_agent | Discount codes, promo issues               |
-| `POSITIVE`      | account_agent | Compliments, happy feedback                |
-| `GENERAL`       | supervisor    | Greetings, unclear, multi-topic            |
+| Intent | Agent | Description |
+|--------|-------|-------------|
+| `WISMO` | wismo_agent | Shipping delays, tracking, delivery status |
+| `WRONG_MISSING` | issue_agent | Wrong/missing items in package |
+| `NO_EFFECT` | issue_agent | Product not working, no results |
+| `REFUND` | issue_agent | Refund requests, money back |
+| `ORDER_MODIFY` | account_agent | Cancel order, change address |
+| `SUBSCRIPTION` | account_agent | Subscription management, billing |
+| `DISCOUNT` | account_agent | Discount codes, promo issues |
+| `POSITIVE` | account_agent | Compliments, happy feedback |
+| `GENERAL` | supervisor | Greetings, unclear, multi-topic |
 
 **Multi-Turn Shift Detection:**
 
@@ -315,7 +315,6 @@ flowchart TD
 **WISMO Tools:** `shopify_get_customer_orders`, `shopify_get_order_details`, `shopify_add_tags`, `shopify_create_draft_order`
 
 **Key Rules:**
-
 - NEVER promise a specific delivery date
 - NEVER say "guaranteed" or "definitely"
 - Day-aware wait promise changes based on the day of the week
@@ -370,7 +369,6 @@ flowchart TD
 **Issue Tools:** `shopify_get_order_details`, `shopify_get_customer_orders`, `shopify_refund_order`, `shopify_create_store_credit`, `shopify_create_return`, `shopify_add_tags`, `shopify_get_product_recommendations`, `shopify_get_product_details`, `shopify_get_related_knowledge_source`, `shopify_create_draft_order`
 
 **Resolution Priority (NEVER skip steps):**
-
 1. 🔧 **Fix the issue** — correct usage tips, product swap recommendation
 2. 📦 **Free reship** — escalate to Monica for physical shipment
 3. 💳 **Store credit** — with 10% bonus on item value
@@ -488,41 +486,41 @@ flowchart LR
 
 ### Input Guardrails (Layer 1)
 
-| Check                          | Action                                           | Outcome                       |
-| ------------------------------ | ------------------------------------------------ | ----------------------------- |
-| Empty/Gibberish                | Block + friendly re-prompt                       | `input_blocked = True`        |
-| Prompt Injection (14 patterns) | Block + redirect to CS scope                     | `input_blocked = True`        |
-| PII Detection                  | Redact in-place (CC, SSN, email, phone, address) | Continue with cleaned input   |
-| Length > 5000 chars            | Truncate                                         | Continue                      |
-| Aggressive Language            | Flag for agent context                           | `flag_escalation_risk = True` |
-| Chargeback Threat              | Auto-escalate                                    | → Escalation Handler          |
-| Health Concern                 | Auto-escalate                                    | → Escalation Handler          |
+| Check | Action | Outcome |
+|-------|--------|---------|
+| Empty/Gibberish | Block + friendly re-prompt | `input_blocked = True` |
+| Prompt Injection (14 patterns) | Block + redirect to CS scope | `input_blocked = True` |
+| PII Detection | Redact in-place (CC, SSN, email, phone, address) | Continue with cleaned input |
+| Length > 5000 chars | Truncate | Continue |
+| Aggressive Language | Flag for agent context | `flag_escalation_risk = True` |
+| Chargeback Threat | Auto-escalate | → Escalation Handler |
+| Health Concern | Auto-escalate | → Escalation Handler |
 
 ### Tool Call Guardrails (Layer 4)
 
-| Check                                        | Action                                  |
-| -------------------------------------------- | --------------------------------------- |
-| `shopify_get_order_details` with bare number | Auto-prefix with `#`                    |
-| Action tools without `gid://shopify/...`     | **Block** execution                     |
-| Cancel/refund without order ID               | **Block** execution                     |
-| Discount code when already created (max 1)   | **Block** execution                     |
-| Discount code values                         | **Force** to 10%, 48hr, percentage type |
-| Store credit missing customer ID             | **Auto-fill** from session state        |
-| Duplicate tool call (last 3 calls)           | **Block** execution                     |
+| Check | Action |
+|-------|--------|
+| `shopify_get_order_details` with bare number | Auto-prefix with `#` |
+| Action tools without `gid://shopify/...` | **Block** execution |
+| Cancel/refund without order ID | **Block** execution |
+| Discount code when already created (max 1) | **Block** execution |
+| Discount code values | **Force** to 10%, 48hr, percentage type |
+| Store credit missing customer ID | **Auto-fill** from session state |
+| Duplicate tool call (last 3 calls) | **Block** execution |
 
 ### Output Guardrails (Layer 5)
 
-| Check                                           | Action                      |
-| ----------------------------------------------- | --------------------------- |
-| `HANDOFF:` prefix detected                      | Route to Handoff Router     |
-| `ESCALATE:` prefix detected                     | Route to Escalation Handler |
-| Embedded HANDOFF/ESCALATE in body               | Flag as internal leak       |
-| Forbidden phrases (9 patterns)                  | Fail → revision             |
-| Missing "Caz" signature                         | Fail → revision             |
-| Competitor brand mentions (6 brands)            | Fail → revision             |
-| Refund > order total × 1.10                     | Fail → revision             |
-| Response < 20 characters                        | Fail → revision             |
-| Internal keywords (`gid://`, `tool_call`, etc.) | Fail → revision             |
+| Check | Action |
+|-------|--------|
+| `HANDOFF:` prefix detected | Route to Handoff Router |
+| `ESCALATE:` prefix detected | Route to Escalation Handler |
+| Embedded HANDOFF/ESCALATE in body | Flag as internal leak |
+| Forbidden phrases (9 patterns) | Fail → revision |
+| Missing "Caz" signature | Fail → revision |
+| Competitor brand mentions (6 brands) | Fail → revision |
+| Refund > order total × 1.10 | Fail → revision |
+| Response < 20 characters | Fail → revision |
+| Internal keywords (`gid://`, `tool_call`, etc.) | Fail → revision |
 
 ---
 
@@ -616,7 +614,6 @@ flowchart TD
 ```
 
 **Escalation Payload includes:**
-
 - Customer name, email, Shopify ID
 - Order ID / Subscription ID (auto-resolved from tool call logs)
 - Category, Priority (high if health/chargeback/billing)
@@ -681,32 +678,32 @@ classDiagram
 
 ### Shopify Tools (14 Tools)
 
-| Tool                                     | Type   | ID Format                    | Description                      |
-| ---------------------------------------- | ------ | ---------------------------- | -------------------------------- |
-| `shopify_get_order_details`              | Lookup | `#XXXXX`                     | Fetch single order details       |
-| `shopify_get_customer_orders`            | Lookup | Email                        | List customer orders (paginated) |
-| `shopify_get_product_details`            | Lookup | Name/ID                      | Get product information          |
-| `shopify_get_product_recommendations`    | Lookup | Keywords                     | Product recommendations          |
-| `shopify_get_related_knowledge_source`   | Lookup | Question                     | FAQs, guides, articles           |
-| `shopify_get_collection_recommendations` | Lookup | Keywords                     | Collection recommendations       |
-| `shopify_cancel_order`                   | Action | `gid://shopify/Order/...`    | Cancel order (7 params)          |
-| `shopify_refund_order`                   | Action | `gid://shopify/Order/...`    | Process refund                   |
-| `shopify_create_store_credit`            | Action | `gid://shopify/Customer/...` | Issue store credit               |
-| `shopify_add_tags`                       | Action | `gid://shopify/...`          | Add tags to resource             |
-| `shopify_create_discount_code`           | Action | —                            | Create discount code             |
-| `shopify_update_order_shipping_address`  | Action | `gid://shopify/Order/...`    | Update shipping address          |
-| `shopify_create_return`                  | Action | `gid://shopify/Order/...`    | Create return                    |
-| `shopify_create_draft_order`             | Action | —                            | Create draft order (reship prep) |
+| Tool | Type | ID Format | Description |
+|------|------|-----------|-------------|
+| `shopify_get_order_details` | Lookup | `#XXXXX` | Fetch single order details |
+| `shopify_get_customer_orders` | Lookup | Email | List customer orders (paginated) |
+| `shopify_get_product_details` | Lookup | Name/ID | Get product information |
+| `shopify_get_product_recommendations` | Lookup | Keywords | Product recommendations |
+| `shopify_get_related_knowledge_source` | Lookup | Question | FAQs, guides, articles |
+| `shopify_get_collection_recommendations` | Lookup | Keywords | Collection recommendations |
+| `shopify_cancel_order` | Action | `gid://shopify/Order/...` | Cancel order (7 params) |
+| `shopify_refund_order` | Action | `gid://shopify/Order/...` | Process refund |
+| `shopify_create_store_credit` | Action | `gid://shopify/Customer/...` | Issue store credit |
+| `shopify_add_tags` | Action | `gid://shopify/...` | Add tags to resource |
+| `shopify_create_discount_code` | Action | — | Create discount code |
+| `shopify_update_order_shipping_address` | Action | `gid://shopify/Order/...` | Update shipping address |
+| `shopify_create_return` | Action | `gid://shopify/Order/...` | Create return |
+| `shopify_create_draft_order` | Action | — | Create draft order (reship prep) |
 
 ### Skio Subscription Tools (5 Tools)
 
-| Tool                                | Description                        |
-| ----------------------------------- | ---------------------------------- |
-| `skio_get_subscription_status`      | Check subscription status by email |
-| `skio_cancel_subscription`          | Cancel subscription with reasons   |
-| `skio_pause_subscription`           | Pause until specific date          |
-| `skio_skip_next_order_subscription` | Skip next subscription order       |
-| `skio_unpause_subscription`         | Resume paused subscription         |
+| Tool | Description |
+|------|-------------|
+| `skio_get_subscription_status` | Check subscription status by email |
+| `skio_cancel_subscription` | Cancel subscription with reasons |
+| `skio_pause_subscription` | Pause until specific date |
+| `skio_skip_next_order_subscription` | Skip next subscription order |
+| `skio_unpause_subscription` | Resume paused subscription |
 
 ### Tool Assignment per Agent
 
@@ -797,34 +794,34 @@ The Streamlit UI displays traces in **real-time** alongside the chat interface, 
 
 ## 🛠 Tech Stack
 
-| Component                | Technology                                     |
-| ------------------------ | ---------------------------------------------- |
-| **Orchestration**        | LangGraph (StateGraph)                         |
-| **LLM - Reasoning**      | Claude Sonnet 4 (`claude-sonnet-4-20250514`)   |
+| Component | Technology |
+|-----------|-----------|
+| **Orchestration** | LangGraph (StateGraph) |
+| **LLM - Reasoning** | Claude Sonnet 4 (`claude-sonnet-4-20250514`) |
 | **LLM - Classification** | Claude Haiku 4.5 (`claude-haiku-4-5-20251001`) |
-| **API Framework**        | FastAPI                                        |
-| **Frontend**             | Streamlit                                      |
-| **State Persistence**    | AsyncSqliteSaver (LangGraph) + SQLite          |
-| **HTTP Client**          | httpx (async + sync)                           |
-| **E-Commerce**           | Shopify Admin API                              |
-| **Subscriptions**        | Skio API                                       |
-| **Schema Validation**    | Pydantic v2                                    |
-| **Agent Pattern**        | ReAct (Reasoning + Acting)                     |
-| **Language**             | Python 3.11+                                   |
+| **API Framework** | FastAPI |
+| **Frontend** | Streamlit |
+| **State Persistence** | AsyncSqliteSaver (LangGraph) + SQLite |
+| **HTTP Client** | httpx (async + sync) |
+| **E-Commerce** | Shopify Admin API |
+| **Subscriptions** | Skio API |
+| **Schema Validation** | Pydantic v2 |
+| **Agent Pattern** | ReAct (Reasoning + Acting) |
+| **Language** | Python 3.11+ |
 
 ---
 
 ## 📡 API Reference
 
-| Endpoint              | Method | Description                                     |
-| --------------------- | ------ | ----------------------------------------------- |
-| `/health`             | GET    | Health check                                    |
-| `/session/start`      | POST   | Start new support session                       |
-| `/session/message`    | POST   | Send customer message, get agent response       |
-| `/session/{id}/trace` | GET    | Get full session trace for observability        |
-| `/sessions`           | GET    | List past sessions (optionally filter by email) |
-| `/debug/set-time`     | POST   | Override system time for testing wait promises  |
-| `/debug/clear-time`   | POST   | Clear time override                             |
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/health` | GET | Health check |
+| `/session/start` | POST | Start new support session |
+| `/session/message` | POST | Send customer message, get agent response |
+| `/session/{id}/trace` | GET | Get full session trace for observability |
+| `/sessions` | GET | List past sessions (optionally filter by email) |
+| `/debug/set-time` | POST | Override system time for testing wait promises |
+| `/debug/clear-time` | POST | Clear time override |
 
 ### Example: Start Session
 
