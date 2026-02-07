@@ -31,6 +31,25 @@ PRIMARY intent (the main complaint/request, not secondary mentions).
 Example: "My order hasn't arrived and I want a refund" → REFUND (primary action request)
 Example: "Where is order #123?" → WISMO (status inquiry)
 
+## FEW-SHOT EXAMPLES — WRONG_MISSING vs WISMO:
+
+### WRONG_MISSING (NOT WISMO):
+- "I only received 2 of 5 items" → WRONG_MISSING|95 (partial delivery)
+- "My order #NP1234 arrived but 3 stickers are missing" → WRONG_MISSING|90
+- "The box only had half my order" → WRONG_MISSING|92
+- "Received wrong items, not what I ordered" → WRONG_MISSING|95
+
+### WISMO (entire order status):
+- "Has my order shipped yet?" → WISMO|95
+- "Where is my order #NP1234?" → WISMO|92 (status inquiry)
+- "It's been 2 weeks and I haven't received anything" → WISMO|88 (entire order not arrived)
+- "What's my tracking number?" → WISMO|90
+
+KEY DISTINCTION:
+- "Items missing FROM arrived order" → WRONG_MISSING
+- "Entire order hasn't arrived" → WISMO
+- Order number does NOT automatically mean WISMO
+
 Response format (ONLY this, nothing else): CATEGORY|CONFIDENCE
 Example: WISMO|92
 

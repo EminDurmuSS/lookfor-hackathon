@@ -102,6 +102,18 @@ _ENTIRE_ORDER_WRONG_PATTERNS: list[str] = [
     "completely wrong",
 ]
 
+_PARTIAL_DELIVERY_PATTERNS: list[str] = [
+    "only received",
+    "missing items",
+    "items missing",
+    "some items are missing",
+    "didn't get all",
+    "partial delivery",
+    "incomplete order",
+    "few items missing",
+    "of my items",
+]
+
 _RESHIP_OFFER_PATTERNS: list[str] = [
     "free replacement",
     "replacement work",
@@ -215,6 +227,7 @@ def _is_reship_escalation_allowed(state: dict) -> bool:
     return any([
         bool(state.get("flag_entire_order_wrong")),
         bool(state.get("flag_reship_acceptance")),
+        bool(state.get("flag_partial_delivery")),  # Partial delivery also allows reship
     ])
 
 
@@ -280,6 +293,12 @@ def input_guardrails_node(state: dict) -> dict:
 
     flag_entire_order_wrong, flag_reship_acceptance = _detect_reship_signals(state, norm)
 
+    # Detect partial delivery (1+ items missing but not entire order)
+    flag_partial_delivery = (
+        any(p in norm for p in _PARTIAL_DELIVERY_PATTERNS)
+        and not flag_entire_order_wrong
+    )
+
     reasons: list[str] = []
     if pii_detected:
         reasons.append("PII redacted")
@@ -293,6 +312,8 @@ def input_guardrails_node(state: dict) -> dict:
         reasons.append("Entire-order-wrong signal detected")
     if flag_reship_acceptance:
         reasons.append("Reship acceptance detected")
+    if flag_partial_delivery:
+        reasons.append("Partial delivery detected")
 
     return {
         "input_blocked": False,
@@ -302,6 +323,7 @@ def input_guardrails_node(state: dict) -> dict:
         "flag_health_concern": health,
         "flag_entire_order_wrong": flag_entire_order_wrong,
         "flag_reship_acceptance": flag_reship_acceptance,
+        "flag_partial_delivery": flag_partial_delivery,
         "agent_reasoning": [f"INPUT GUARDRAIL: {', '.join(reasons) if reasons else 'Clean input'}"],
     }
 
@@ -324,10 +346,10 @@ _FORBIDDEN_PHRASES: list[tuple[str, str]] = [
 ]
 
 # Case-insensitive substring list; keep short.
+# NOTE: "repel" removed — causes false positives with "tick repellent stickers"
 _COMPETITORS: list[str] = [
     "zevo",
     "off!",
-    "repel",
     "raid",
     "babyganics",
     "skin so soft",

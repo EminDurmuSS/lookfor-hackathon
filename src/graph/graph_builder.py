@@ -4,6 +4,8 @@ Complete LangGraph graph for the multi-agent customer-support flow.
 
 from __future__ import annotations
 
+import asyncio
+
 from langgraph.graph import END, START, StateGraph
 
 from src.agents.escalation import escalation_handler_node, post_escalation_node
@@ -45,6 +47,7 @@ async def escalation_lock_node(state: dict) -> dict:
         "flag_health_concern": False,
         "flag_entire_order_wrong": False,
         "flag_reship_acceptance": False,
+        "flag_partial_delivery": False,
         "handoff_target": None,
         "intent_shifted": False,
     }
@@ -126,6 +129,34 @@ async def auto_escalate_reship_node(state: dict) -> dict:
     }
 
 
+# ─── Selective Reflection: Skip for non-destructive responses ─────────────
+_DESTRUCTIVE_KEYWORDS = [
+    "refund", "store credit", "cancel", "reship", "replacement",
+    "discount", "coupon", "escalat", "supervisor", "manager",
+    "compensation", "free", "credit", "reimburse",
+]
+
+
+def _should_run_reflection(state: dict) -> bool:
+    """Check if reflection is needed — skip for simple info responses."""
+    # Always run reflection for escalations
+    if state.get("is_escalated"):
+        return True
+
+    # Find last AI message
+    last_ai = None
+    for msg in reversed(state.get("messages", [])):
+        if hasattr(msg, "type") and msg.type == "ai":
+            last_ai = (msg.content or "").lower()
+            break
+
+    if not last_ai:
+        return False
+
+    # Run reflection if any destructive keyword present
+    return any(kw in last_ai for kw in _DESTRUCTIVE_KEYWORDS)
+
+
 def _route_after_output_guardrails(state: dict) -> str:
     if state.get("is_escalation"):
         return "escalation_handler"
@@ -133,7 +164,10 @@ def _route_after_output_guardrails(state: dict) -> str:
         return "handoff_router"
     if not state.get("output_guardrail_passed", True):
         return "revise_response"
-    return "reflection_validator"
+    # Selective reflection: skip for non-destructive responses
+    if _should_run_reflection(state):
+        return "reflection_validator"
+    return "__end__"
 
 
 def _route_after_reflection(state: dict) -> str:
@@ -149,7 +183,8 @@ def _route_after_revision(state: dict) -> str:
 
 
 async def output_guardrails_final_node(state: dict) -> dict:
-    return output_guardrails_node(state)
+    """Run output guardrails in thread pool for async consistency."""
+    return await asyncio.to_thread(output_guardrails_node, state)
 
 
 def _route_after_handoff(state: dict) -> str:
@@ -248,6 +283,7 @@ def build_graph() -> StateGraph:
         "output_guardrails",
         _route_after_output_guardrails,
         {
+            "__end__": END,
             "escalation_handler": "escalation_handler",
             "handoff_router": "handoff_router",
             "revise_response": "revise_response",

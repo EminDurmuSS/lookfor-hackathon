@@ -6,7 +6,17 @@ Includes loop prevention (max 1 handoff per turn).
 
 from __future__ import annotations
 
-from langchain_core.messages import RemoveMessage
+import re
+
+from langchain_core.messages import AIMessage, RemoveMessage
+
+
+# Patterns to detect and clean embedded internal commands
+_INTERNAL_COMMAND_PATTERNS = [
+    re.compile(r"\bHANDOFF:\s*\w+[^\n]*", re.IGNORECASE),
+    re.compile(r"\bESCALATE:\s*\w+[^\n]*", re.IGNORECASE),
+    re.compile(r"\bTRANSFER:\s*\w+[^\n]*", re.IGNORECASE),
+]
 
 
 def handoff_router_node(state: dict) -> dict:
@@ -52,11 +62,32 @@ def handoff_router_node(state: dict) -> dict:
             ],
         }
 
+    # Clean embedded commands from non-handoff messages (prevent info leaks)
+    cleaned_msg = last_msg
+    for pattern in _INTERNAL_COMMAND_PATTERNS:
+        cleaned_msg = pattern.sub("", cleaned_msg)
+    cleaned_msg = cleaned_msg.strip()
+
+    # If message was cleaned, update it
+    message_update = {}
+    if cleaned_msg != last_msg and last_msg_id:
+        message_update = {
+            "messages": [
+                RemoveMessage(id=last_msg_id),
+                AIMessage(content=cleaned_msg, id=last_msg_id),
+            ],
+            "agent_reasoning": [
+                "HANDOFF: Cleaned embedded internal commands from response"
+            ],
+        }
+
     return {
+        **message_update,
         "handoff_target": "supervisor",
         "current_agent": "supervisor",
         "handoff_count_this_turn": count,
-        "agent_reasoning": [
+        "agent_reasoning": message_update.get("agent_reasoning", [
             "HANDOFF: Invalid format, falling back to supervisor"
-        ],
+        ]),
     }
+

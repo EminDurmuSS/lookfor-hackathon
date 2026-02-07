@@ -65,14 +65,19 @@ async def reflection_validator_node(state: dict) -> dict:
             except json.JSONDecodeError:
                 pass
 
-    # If still can't parse → retry once asking for JSON only
+    # If still can't parse → retry once WITH context for accurate re-parsing
     if validation is None:
-        retry_result = await haiku_llm.ainvoke(
-            "Your previous response was not valid JSON. "
-            "Please respond with ONLY valid JSON, no markdown:\n"
-            '{"pass": true} OR {"pass": false, "rule_violated": "...", '
-            '"reason": "...", "suggested_fix": "..."}'
-        )
+        retry_prompt = f"""{prompt}
+
+IMPORTANT: Your previous response was not valid JSON:
+---
+{text}
+---
+
+Please respond ONLY with valid JSON. No markdown, no backticks.
+Required format: {{"pass": true}} OR {{"pass": false, "rule_violated": "...", "reason": "...", "suggested_fix": "..."}}
+"""
+        retry_result = await haiku_llm.ainvoke(retry_prompt)
         retry_text = retry_result.content.strip().replace("```json", "").replace("```", "").strip()
         try:
             validation = json.loads(retry_text)

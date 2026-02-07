@@ -119,6 +119,7 @@ class SessionListItem(BaseModel):
 
 @app.get("/health")
 async def health():
+    print("HEALTH CHECK HIT")
     return {"status": "ok", "version": "3.0"}
 
 

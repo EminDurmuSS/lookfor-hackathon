@@ -10,7 +10,7 @@ DB_PATH = "history.db"
 
 def init_db():
     """Initialize the sessions table if it doesn't exist."""
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DB_PATH, timeout=10.0)
     c = conn.cursor()
     c.execute("""
         CREATE TABLE IF NOT EXISTS sessions (
@@ -29,7 +29,7 @@ def add_session(session_id: str, email: str, name: str, created_at: str = None):
     if not created_at:
         created_at = datetime.utcnow().isoformat()
     
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DB_PATH, timeout=10.0)
     c = conn.cursor()
     c.execute(
         "INSERT OR IGNORE INTO sessions (session_id, customer_email, customer_name, created_at, preview) VALUES (?, ?, ?, ?, ?)",
@@ -40,7 +40,7 @@ def add_session(session_id: str, email: str, name: str, created_at: str = None):
 
 def update_preview(session_id: str, preview_text: str):
     """Update the preview text for a session (usually after first message)."""
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DB_PATH, timeout=10.0)
     c = conn.cursor()
     # Only update if it currently says "New Conversation" or is empty, to preserve the first topic
     # Or we can just always update it to show the latest state. 
@@ -54,7 +54,7 @@ def update_preview(session_id: str, preview_text: str):
 
 def list_sessions(email: Optional[str] = None) -> List[dict]:
     """List all sessions ordered by creation date (newest first). Filter by email if provided."""
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DB_PATH, timeout=10.0)
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
     

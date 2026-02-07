@@ -55,6 +55,7 @@ class CustomerSupportState(TypedDict, total=False):
     flag_health_concern: bool  # health / allergy mention
     flag_entire_order_wrong: bool  # deterministic reship trigger
     flag_reship_acceptance: bool  # deterministic reship trigger (offer accepted)
+    flag_partial_delivery: bool  # 1+ items missing but not entire order wrong
     is_handoff: bool  # agent requested cross-agent handoff
     is_escalation: bool  # control command for escalation handler
     handoff_target: Optional[str]

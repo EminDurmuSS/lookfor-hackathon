@@ -446,8 +446,7 @@ def load_scenarios_from_json() -> list[dict]:
 
         customer = sc.get("customer", DEFAULT_CUSTOMER)
         
-        # Get the old agent response for comparison (from agent_response field)
-        old_agent_response = sc.get("agent_response", "")
+
 
         scenario_obj = {
             "id": sc.get("id", "UNKNOWN"),
@@ -456,7 +455,6 @@ def load_scenarios_from_json() -> list[dict]:
             "description": sc.get("description", ""),
             "messages": messages,
             "customer": customer,
-            "old_agent_response": old_agent_response,  # Old agent's response for comparison
         }
         loaded.append(scenario_obj)
 
@@ -683,19 +681,15 @@ def _wrap_text(text: str, width: int) -> list[str]:
 def run_scenario(logger: DualLogger, sc: dict, index: int, total: int) -> dict:
     """Run a single scenario and return result dict with old vs new agent comparison."""
     sid = sc["id"]
-    old_agent_response = sc.get("old_agent_response", "")
-
     logger.log()
     logger.section(f"SCENARIO {index}/{total}: {sid} — {sc['title']}", "═")
     logger.kv("Category", sc["category"])
     logger.kv("Customer", f"{sc['customer']['first_name']} {sc['customer']['last_name']} <{sc['customer']['email']}>")
     logger.kv("Turns", len(sc["messages"]))
-    logger.kv("Has Old Response", "Yes" if old_agent_response else "No")
 
     result = {
         "id": sid, "title": sc["title"], "category": sc["category"],
         "passed": True, "error": None, "turns": [], "duration_s": 0,
-        "old_agent_response": old_agent_response,
         "new_agent_response": "",
     }
     start_time = time.time()
@@ -807,33 +801,6 @@ def run_scenario(logger: DualLogger, sc: dict, index: int, total: int) -> dict:
         # Store new agent response
         new_response = last_response.get("response", "") if last_response else ""
         result["new_agent_response"] = new_response
-
-        # ── OLD vs NEW Agent Response Comparison ──────────────────────────
-        logger.subsection("OLD vs NEW AGENT RESPONSE COMPARISON")
-        
-        if old_agent_response:
-            logger.log("      📜 OLD AGENT RESPONSE:")
-            logger.log(f"      ┌{'─' * 66}┐")
-            for line in old_agent_response.split("\n"):
-                if len(line) <= 64:
-                    logger.log(f"      │ {line:64s} │")
-                else:
-                    logger.log(f"      │ {line}")
-            logger.log(f"      └{'─' * 66}┘")
-            logger.log()
-        else:
-            logger.log("      ⚠️ No old agent response available for this scenario")
-            logger.log()
-
-        logger.log("      🤖 NEW AGENT RESPONSE:")
-        logger.log(f"      ┌{'─' * 66}┐")
-        for line in new_response.split("\n") if new_response else ["(empty)"]:
-            if len(line) <= 64:
-                logger.log(f"      │ {line:64s} │")
-            else:
-                logger.log(f"      │ {line}")
-        logger.log(f"      └{'─' * 66}┘")
-        logger.log()
 
     except Exception as exc:
         result["passed"] = False
@@ -968,12 +935,10 @@ def main():
 
         completed = sum(1 for r in results if r["passed"])
         errored = sum(1 for r in results if r.get("error"))
-        with_old_response = sum(1 for r in results if r.get("old_agent_response"))
 
         logger.log(f"  Scenarios:           {len(results)} total")
         logger.log(f"  Completed:           {completed} ✅")
         logger.log(f"  Errors:              {errored} 💥")
-        logger.log(f"  With Old Response:   {with_old_response} (for comparison)")
         logger.log(f"  Total Duration:      {total_duration}s")
         logger.log(f"  Avg per scenario:    {round(total_duration/max(len(results),1),1)}s")
         logger.log()
@@ -1022,8 +987,7 @@ def main():
         logger.subsection("TIMING (slowest first)")
         for r in sorted(results, key=lambda x: -x["duration_s"]):
             status = "✅" if r["passed"] else "💥"
-            has_old = "📜" if r.get("old_agent_response") else "  "
-            logger.log(f"    {status} {has_old} {r['id']:20s} {r['duration_s']:6.1f}s")
+            logger.log(f"    {status} {r['id']:20s} {r['duration_s']:6.1f}s")
         logger.log()
 
         # ── Multi-turn analysis ──────────────────────────────────────────
@@ -1048,7 +1012,6 @@ def main():
         fail_f.write(f"Total scenarios: {len(results)}\n")
         fail_f.write(f"Completed: {completed}\n")
         fail_f.write(f"Errors: {errored}\n")
-        fail_f.write(f"With Old Response: {with_old_response}\n")
         fail_f.write(f"Main log: {LOG_FILE}\n")
         fail_f.write("=" * 90 + "\n")
         fail_f.flush()

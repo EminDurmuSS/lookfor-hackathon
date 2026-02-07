@@ -30,7 +30,9 @@ class SessionTrace(BaseModel):
     started_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     intent: Optional[str] = None
     intent_confidence: Optional[int] = None
+    current_agent: Optional[str] = None
     traces: list[TraceEntry] = Field(default_factory=list)
+    agent_reasoning: list[str] = Field(default_factory=list)
     final_response: Optional[str] = None
     actions_taken: list[str] = Field(default_factory=list)
     is_escalated: bool = False
@@ -121,7 +123,9 @@ def build_session_trace(session_id: str, state: dict) -> SessionTrace:
         customer_name=f"{state.get('customer_first_name', '')} {state.get('customer_last_name', '')}".strip(),
         intent=state.get("ticket_category"),
         intent_confidence=state.get("intent_confidence"),
+        current_agent=state.get("current_agent"),
         traces=traces,
+        agent_reasoning=state.get("agent_reasoning", []),
         final_response=final,
         actions_taken=state.get("actions_taken", []),
         is_escalated=state.get("is_escalated", False),
